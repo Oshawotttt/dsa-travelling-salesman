@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Callable, Sequence
 
-from airdrop.approach_a import SolveResult, fits, insertion_key
+from airdrop.approach_a import SolveResult, insertion_key
 from airdrop.baseline import nearest_neighbour
 from airdrop.model import Instance, evaluate
 from airdrop.prefix import RouteState
@@ -51,7 +51,7 @@ def _best_move(inst: Instance, route: list[int], L: int) -> tuple[MoveKey, Calla
 
     positions, fuels = state.best_insertions(unvisited)
     for t, pos, fuel in zip(unvisited, positions, fuels):
-        if pop(t) > 0 and fits(inst, k + 1, fuel):
+        if pop(t) > 0 and inst.fits(k + 1, fuel):
             offer((-pop(t), fuel, ADD, (t,)), lambda t=t, pos=pos: route[:pos] + [t] + route[pos:])
 
     for p, r in enumerate(route):
@@ -60,7 +60,7 @@ def _best_move(inst: Instance, route: list[int], L: int) -> tuple[MoveKey, Calla
         positions, fuels = rest_state.best_insertions(unvisited)
         single = {u: (pos, fuel) for u, pos, fuel in zip(unvisited, positions, fuels)}
         for u, (pos, fuel) in single.items():
-            if pop(u) > pop(r) and fits(inst, k, fuel):
+            if pop(u) > pop(r) and inst.fits(k, fuel):
                 offer((pop(r) - pop(u), fuel, SWAP, (r, u)),
                       lambda rest=rest, u=u, pos=pos: rest[:pos] + [u] + rest[pos:])
         top = sorted(unvisited, key=lambda u: insertion_key(inst, u, single[u][1], rest_state.fuel_needed),
@@ -73,7 +73,7 @@ def _best_move(inst: Instance, route: list[int], L: int) -> tuple[MoveKey, Calla
             with_u = rest[:pos_u] + [u] + rest[pos_u:]
             positions, fuels = RouteState(inst, with_u).best_insertions(others)
             for v, pos, fuel in zip(others, positions, fuels):
-                if fits(inst, k + 1, fuel):
+                if inst.fits(k + 1, fuel):
                     offer((pop(r) - pop(u) - pop(v), fuel, REPLACE, (r, u, v)),
                           lambda with_u=with_u, v=v, pos=pos: with_u[:pos] + [v] + with_u[pos:])
     return best[0]

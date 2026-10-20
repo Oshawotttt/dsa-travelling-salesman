@@ -20,11 +20,7 @@ from typing import Sequence
 
 import numpy as np
 
-from airdrop.model import Instance, exp, fuel_needed_from, phi
-
-
-def _phi_array(b: float, x: np.ndarray) -> np.ndarray:
-    return x if b == 0 else np.expm1(b * x) / b
+from airdrop.model import Instance, fuel_needed_array, fuel_needed_from, phi, phi_array, safe_exp
 
 
 class RouteState:
@@ -56,7 +52,7 @@ class RouteState:
         """sum(phi(S_m + delta)) over drops first..last."""
         if first > last:
             return 0.0
-        return exp(self.inst.b * delta) * (self._P[last] - self._P[first - 1]) \
+        return safe_exp(self.inst.b * delta) * (self._P[last] - self._P[first - 1]) \
             + (last - first + 1) * phi(self.inst.b, delta)
 
     def insert_fuel(self, t: int, pos: int) -> float:
@@ -81,7 +77,7 @@ class RouteState:
         (positions, fuels) in the order of towns. Same formulas as insert_fuel."""
         if len(towns) == 0:
             return [], []
-        inst, b, p = self.inst, self.inst.b, self.inst.params
+        inst, b = self.inst, self.inst.b
         k = len(self.route)
         T = np.asarray(towns)
         v = np.asarray(self._nodes)
@@ -93,10 +89,9 @@ class RouteState:
         after = (P[k] - P)[:, None]                   # drops after the slot
         count = (k - np.arange(k + 1))[:, None]
         with np.errstate(over="ignore", invalid="ignore"):
-            drops = P[:, None] + _phi_array(b, S + d_in) + np.exp(b * delta) * after                 + count * _phi_array(b, delta)
-            D = self._S[-1] + delta
-            fuel = p.R * np.exp(b * D) + inst.a * _phi_array(b, D) + p.w * b * drops
-            fuel = np.where(np.isnan(fuel), np.inf, fuel)  # NaN is 0 * inf after an overflow
+            drops = (P[:, None] + phi_array(b, S + d_in) + np.exp(b * delta) * after
+                     + count * phi_array(b, delta))
+        fuel = fuel_needed_array(inst, self._S[-1] + delta, drops)
         best = np.argmin(fuel, axis=0)                # first minimum: smallest position on ties
         return best.tolist(), fuel[best, np.arange(len(T))].tolist()
 
@@ -116,7 +111,7 @@ class RouteState:
         S, D, count = self._S, self._S[-1], j - i + 1
         to_end = D - S[j + 1]
         # sum(phi(B - S_m)) = sum(phi((D - S_m) - to_end)), all terms >= 0
-        back = exp(-b * to_end) * (self._Q[i + 1] - self._Q[j + 2]) + count * phi(b, -to_end)
+        back = safe_exp(-b * to_end) * (self._Q[i + 1] - self._Q[j + 2]) + count * phi(b, -to_end)
         # sum(e^(b (B - S_m))) = count + b * back
         inside = phi(b, S[i] + d_in) * (count + b * back) + back
         drops = self._P[i] + inside + self._shifted(j + 2, k, delta)

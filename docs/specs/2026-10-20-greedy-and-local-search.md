@@ -99,6 +99,7 @@ class Instance:
     def dist(self, i: int, j: int) -> float   # precomputed (n+1)x(n+1)
     def population(self, i: int) -> int
     def fuel_limit(self, k: int) -> float     # min(F, MTOW - E - w*k)
+    def fits(self, k: int, fuel: float) -> bool  # added in code review: w*k <= C and fuel <= fuel_limit(k)
 
 @dataclass(frozen=True)
 class RouteEval:
@@ -202,6 +203,11 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
     - A route with a bad index evaluates to population 0, distance 0, `fuel_needed = inf` (code; no doc needed).
     - Route indices accept any integer type (`operator.index`), so numpy integers work (code; no doc needed).
     - The distance matrix is computed once with numpy and stored as nested Python lists, because scalar lookups on lists are faster than on numpy arrays (code; no doc needed).
+    - Code-review fixes (no behaviour change: routes and stats identical before and after; fuel values equal to floating-point rounding, about 1e-14 relative):
+      - `haversine_km` is the one haversine implementation; it takes floats or numpy arrays, and `Instance` builds its matrix with it (code docstring; no doc needed).
+      - `Instance.fits(k, fuel)` holds the payload, tank and takeoff check used by both solvers, next to `fuel_limit` (spec change under Interfaces; code docstring).
+      - The overflow-safe `e^x` is named `safe_exp`, so it is not mistaken for `math.exp` (code; no doc needed).
+      - The numpy form of the fuel formula (`fuel_needed_array`, `phi_array`) sits in `model.py` beside the scalar `fuel_needed_from`, so a change to the fuel model is made in one module (code docstring; no doc needed).
 
 ### S2 Route prefix sums (O(1) move costs)
 
@@ -244,7 +250,7 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - [x] Deterministic across runs. `test_scan_deterministic`
   - [x] `stats` has `score_evals` and `insertions`. `test_scan_stats`
 - **Doc deltas:** none from the spec. Decisions made during implementation:
-  - A town fits when `w·(k+1) ≤ C` and its cheapest-insertion fuel is `≤ fuel_limit(k+1)`; the cheapest position is the only one checked, since feasibility is monotone in fuel (`approach_a.fits`, code docstring; no doc needed).
+  - A town fits when `w·(k+1) ≤ C` and its cheapest-insertion fuel is `≤ fuel_limit(k+1)`; the cheapest position is the only one checked, since feasibility is monotone in fuel (`Instance.fits`, moved there from `approach_a` in code review; code docstring; no doc needed).
   - `score_evals` counts one per `best_insertion` call (one candidate scored against the current route) (code; README can mention it with the stats).
   - The scan visits candidates in index order and drops a town as soon as its cheapest insertion does not fit (code comment; no doc needed).
   - `RouteState` is rebuilt (O(k)) after every insertion (PROBLEM.md already says O(n) rebuild after an accepted move; no doc needed).

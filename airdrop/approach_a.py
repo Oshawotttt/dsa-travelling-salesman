@@ -17,11 +17,6 @@ class SolveResult:
     stats: dict[str, int]
 
 
-def fits(inst: Instance, k: int, fuel: float) -> bool:
-    """A route of k towns needing this much fuel meets the payload, tank and takeoff limits."""
-    return inst.params.w * k <= inst.params.C and fuel <= inst.fuel_limit(k)
-
-
 def insertion_key(inst: Instance, t: int, fuel: float, current: float) -> tuple[float, int, int]:
     """Key for inserting t when the route needs `current` and needs `fuel` with t. Larger is better:
     population / marginal fuel (+inf when marginal <= 0), then larger population, then smaller index."""
@@ -45,7 +40,7 @@ def _argmax(inst: Instance, state: RouteState, towns: list[int], stats: dict[str
         if stats is not None:
             stats["score_evals"] += 1
         # the cheapest insertion only gets dearer as the route grows, so an unfit town stays unfit
-        if not fits(inst, k, fuel):
+        if not inst.fits(k, fuel):
             continue
         fit.append(t)
         if best is None or key > best[0]:
@@ -86,7 +81,7 @@ def _heap(inst: Instance, stats: dict[str, int], audit: bool) -> list[int]:
     for t in range(1, inst.n + 1):
         key, _, fuel = score_key(inst, state, t)
         stats["score_evals"] += 1
-        if fits(inst, 1, fuel):
+        if inst.fits(1, fuel):
             heap.append(_entry(key))
             stats["heap_pushes"] += 1
     heapq.heapify(heap)
@@ -95,7 +90,7 @@ def _heap(inst: Instance, stats: dict[str, int], audit: bool) -> list[int]:
         stats["heap_pops"] += 1
         key, pos, fuel = score_key(inst, state, t)
         stats["score_evals"] += 1
-        if not fits(inst, len(route) + 1, fuel):
+        if not inst.fits(len(route) + 1, fuel):
             continue
         entry = _entry(key)
         if heap and entry > heap[0]:

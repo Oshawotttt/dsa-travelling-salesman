@@ -66,11 +66,11 @@ def control_params(p: Params) -> Params:
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = phi2 - phi1
-    dlam = math.radians(lon2 - lon1)
-    h = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
-    return 2 * EARTH_RADIUS_KM * math.asin(min(1.0, math.sqrt(h)))
+    """Great-circle distance in km. Also takes numpy arrays, which broadcast."""
+    phi1, phi2 = np.radians(lat1), np.radians(lat2)
+    dlam = np.radians(np.subtract(lon2, lon1))
+    h = np.sin((phi2 - phi1) / 2) ** 2 + np.cos(phi1) * np.cos(phi2) * np.sin(dlam / 2) ** 2
+    return 2 * EARTH_RADIUS_KM * np.arcsin(np.minimum(1.0, np.sqrt(h)))
 
 
 def load_towns(path: str | Path, min_population: int = 0) -> list[Town]:
@@ -85,7 +85,7 @@ def load_towns(path: str | Path, min_population: int = 0) -> list[Town]:
     return towns
 
 
-def exp(x: float) -> float:
+def safe_exp(x: float) -> float:
     """e^x, returning inf instead of raising on overflow."""
     return math.exp(x) if x < _EXP_MAX else math.inf
 
@@ -99,6 +99,11 @@ def phi(b: float, x: float) -> float:
     return math.expm1(b * x) / b
 
 
+def phi_array(b: float, x: np.ndarray) -> np.ndarray:
+    """phi over a numpy array; overflow gives inf (wrap calls in np.errstate to silence it)."""
+    return x if b == 0 else np.expm1(b * x) / b
+
+
 class Instance:
     def __init__(self, base: Base, towns: Sequence[Town], params: Params):
         self.base = base
@@ -107,12 +112,9 @@ class Instance:
         self.params = params
         self.a: float = params.c * params.E if params.a is None else params.a
         self.b: float = params.c if params.b is None else params.b
-        lat = np.radians([base.lat] + [t.lat for t in self.towns])
-        lon = np.radians([base.lon] + [t.lon for t in self.towns])
-        dphi = lat[None, :] - lat[:, None]
-        dlam = lon[None, :] - lon[:, None]
-        h = np.sin(dphi / 2) ** 2 + np.cos(lat)[:, None] * np.cos(lat)[None, :] * np.sin(dlam / 2) ** 2
-        d = 2 * EARTH_RADIUS_KM * np.arcsin(np.minimum(1.0, np.sqrt(h)))
+        lat = np.array([base.lat] + [t.lat for t in self.towns])
+        lon = np.array([base.lon] + [t.lon for t in self.towns])
+        d = haversine_km(lat[:, None], lon[:, None], lat[None, :], lon[None, :])
         d = (d + d.T) / 2
         np.fill_diagonal(d, 0.0)
         self.dist_matrix: np.ndarray = d  # for vectorised queries; dist() is faster for one pair
@@ -128,6 +130,10 @@ class Instance:
     def fuel_limit(self, k: int) -> float:
         p = self.params
         return min(p.F, p.MTOW - p.E - p.w * k)
+
+    def fits(self, k: int, fuel: float) -> bool:
+        """A route of k towns needing this much fuel meets the payload, tank and takeoff limits."""
+        return self.params.w * k <= self.params.C and fuel <= self.fuel_limit(k)
 
 
 @dataclass(frozen=True)
@@ -168,8 +174,16 @@ def fuel_needed_from(inst: Instance, D: float, drops: float) -> float:
     F0_needed = (R - K) e^(bD) = R e^(bD) + a (e^(bD) - 1)/b + w * sum(e^(b s_i) - 1).
     """
     p = inst.params
-    fuel = p.R * exp(inst.b * D) + inst.a * phi(inst.b, D) + p.w * inst.b * drops
+    fuel = p.R * safe_exp(inst.b * D) + inst.a * phi(inst.b, D) + p.w * inst.b * drops
     return math.inf if math.isnan(fuel) else fuel  # NaN is 0 * inf after an overflow
+
+
+def fuel_needed_array(inst: Instance, D: np.ndarray, drops: np.ndarray) -> np.ndarray:
+    """fuel_needed_from over numpy arrays of D and drops (keep the two formulas in step)."""
+    p = inst.params
+    with np.errstate(over="ignore", invalid="ignore"):
+        fuel = p.R * np.exp(inst.b * D) + inst.a * phi_array(inst.b, D) + p.w * inst.b * drops
+        return np.where(np.isnan(fuel), np.inf, fuel)  # NaN is 0 * inf after an overflow
 
 
 def evaluate(inst: Instance, route: Sequence[int]) -> RouteEval:
