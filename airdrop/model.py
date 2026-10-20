@@ -115,6 +115,7 @@ class Instance:
         d = 2 * EARTH_RADIUS_KM * np.arcsin(np.minimum(1.0, np.sqrt(h)))
         d = (d + d.T) / 2
         np.fill_diagonal(d, 0.0)
+        self.dist_matrix: np.ndarray = d  # for vectorised queries; dist() is faster for one pair
         self._dist: list[list[float]] = d.tolist()
         self._pop = [0] + [t.population for t in self.towns]
 

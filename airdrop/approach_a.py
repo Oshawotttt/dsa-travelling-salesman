@@ -22,14 +22,18 @@ def fits(inst: Instance, k: int, fuel: float) -> bool:
     return inst.params.w * k <= inst.params.C and fuel <= inst.fuel_limit(k)
 
 
-def score_key(inst: Instance, state: RouteState, t: int) -> tuple[tuple[float, int, int], int, float]:
-    """(key, pos, fuel) for inserting t at its cheapest position. Larger key is better:
+def insertion_key(inst: Instance, t: int, fuel: float, current: float) -> tuple[float, int, int]:
+    """Key for inserting t when the route needs `current` and needs `fuel` with t. Larger is better:
     population / marginal fuel (+inf when marginal <= 0), then larger population, then smaller index."""
-    pos, fuel = state.best_insertion(t)
-    marginal = fuel - state.fuel_needed
+    marginal = fuel - current
     pop = inst.population(t)
-    score = pop / marginal if marginal > 0 else math.inf
-    return (score, pop, -t), pos, fuel
+    return (pop / marginal if marginal > 0 else math.inf), pop, -t
+
+
+def score_key(inst: Instance, state: RouteState, t: int) -> tuple[tuple[float, int, int], int, float]:
+    """(key, pos, fuel) for inserting t at its cheapest position (see insertion_key)."""
+    pos, fuel = state.best_insertion(t)
+    return insertion_key(inst, t, fuel, state.fuel_needed), pos, fuel
 
 
 def _argmax(inst: Instance, state: RouteState, towns: list[int], stats: dict[str, int] | None):

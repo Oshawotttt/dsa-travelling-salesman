@@ -18,7 +18,13 @@ from __future__ import annotations
 
 from typing import Sequence
 
+import numpy as np
+
 from airdrop.model import Instance, exp, fuel_needed_from, phi
+
+
+def _phi_array(b: float, x: np.ndarray) -> np.ndarray:
+    return x if b == 0 else np.expm1(b * x) / b
 
 
 class RouteState:
@@ -69,6 +75,30 @@ class RouteState:
             if fuel < best:
                 best_pos, best = pos, fuel
         return best_pos, best
+
+    def best_insertions(self, towns: Sequence[int]) -> tuple[list[int], list[float]]:
+        """best_insertion for many towns at once, vectorised over towns and positions:
+        (positions, fuels) in the order of towns. Same formulas as insert_fuel."""
+        if len(towns) == 0:
+            return [], []
+        inst, b, p = self.inst, self.inst.b, self.inst.params
+        k = len(self.route)
+        T = np.asarray(towns)
+        v = np.asarray(self._nodes)
+        dm = inst.dist_matrix
+        d_in = dm[v[:-1]][:, T]                       # (k+1, m): previous node -> t
+        delta = d_in + dm[v[1:]][:, T] - np.asarray(self._edge)[:, None]
+        S = np.asarray(self._S[:k + 1])[:, None]
+        P = np.asarray(self._P)
+        after = (P[k] - P)[:, None]                   # drops after the slot
+        count = (k - np.arange(k + 1))[:, None]
+        with np.errstate(over="ignore", invalid="ignore"):
+            drops = P[:, None] + _phi_array(b, S + d_in) + np.exp(b * delta) * after                 + count * _phi_array(b, delta)
+            D = self._S[-1] + delta
+            fuel = p.R * np.exp(b * D) + inst.a * _phi_array(b, D) + p.w * b * drops
+            fuel = np.where(np.isnan(fuel), np.inf, fuel)  # NaN is 0 * inf after an overflow
+        best = np.argmin(fuel, axis=0)                # first minimum: smallest position on ties
+        return best.tolist(), fuel[best, np.arange(len(T))].tolist()
 
     def remove_fuel(self, pos: int) -> float:
         """Fuel needed after removing route[pos]."""

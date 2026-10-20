@@ -127,7 +127,11 @@ class RouteState:
     def best_insertion(self, t: int) -> tuple[int, float]  # (pos, fuel_needed); ties -> smallest pos
     def remove_fuel(self, pos: int) -> float             # fuel_needed after removing route[pos]
     def two_opt_fuel(self, i: int, j: int) -> float      # fuel_needed after reversing route[i..j] inclusive, 0 <= i < j < k
+    def best_insertions(self, towns: Sequence[int]) -> tuple[list[int], list[float]]
+        # added in S6: best_insertion for many towns at once, numpy-vectorised; (positions, fuels)
 ```
+
+Spec change (S6): `RouteState.best_insertions` and `Instance.dist_matrix` (the numpy distance matrix behind `dist`) were added to the interfaces during S6. Local search needs the cheapest insertion of every unvisited town into the route without each visited town, every round; the scalar loop measured at tens of seconds per round on 745 towns.
 
 ```python
 # airdrop/approach_a.py
@@ -312,17 +316,27 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - Remaining ties (same gain, same fuel): move type order 2-opt, add, swap, replace 1 with 2, then smallest indices.
   - `max_rounds` cap; `stats["hit_max_rounds"] = 1` if reached.
 - **Acceptance criteria:**
-  - [ ] Result is feasible; population ≥ the initial route's; if equal, fuel needed ≤ initial. `tests/test_approach_b.py::test_not_worse_than_seed`
-  - [ ] Hand-built crossing route: 2-opt removes the crossing and lowers fuel needed. `test_two_opt_uncrosses`
-  - [ ] Hand-built case where add applies. `test_add`
-  - [ ] Hand-built case where swap applies. `test_swap`
-  - [ ] Hand-built case where only replace 1 with 2 improves. `test_replace_1_2`
-  - [ ] With `L = 1`, replace 1 with 2 tries no pair; with `L ≥ n` it matches the unrestricted brute force on n ≤ 8. `test_replace_neighbourhood_L`
-  - [ ] Each round picks the largest population gain, then least fuel, checked by a brute-force oracle over all moves on a small instance (n ≤ 8). `test_best_move_chosen`
-  - [ ] On the result, no move of the four types improves (brute-force check, n ≤ 8). `test_local_optimum`
-  - [ ] `initial=` a given route is used as the seed. `test_custom_seed`
-  - [ ] `result.eval == evaluate(inst, result.route)`; deterministic; stats keys present. `test_consistent_and_stats`
+  - [x] Result is feasible; population ≥ the initial route's; if equal, fuel needed ≤ initial. `tests/test_approach_b.py::test_not_worse_than_seed`
+  - [x] Hand-built crossing route: 2-opt removes the crossing and lowers fuel needed. `test_two_opt_uncrosses`
+  - [x] Hand-built case where add applies. `test_add`
+  - [x] Hand-built case where swap applies. `test_swap`
+  - [x] Hand-built case where only replace 1 with 2 improves. `test_replace_1_2`
+  - [x] With `L = 1`, replace 1 with 2 tries no pair; with `L ≥ n` it matches the unrestricted brute force on n ≤ 8. `test_replace_neighbourhood_L`
+  - [x] Each round picks the largest population gain, then least fuel, checked by a brute-force oracle over all moves on a small instance (n ≤ 8). `test_best_move_chosen`
+  - [x] On the result, no move of the four types improves (brute-force check, n ≤ 8). `test_local_optimum`
+  - [x] `initial=` a given route is used as the seed. `test_custom_seed`
+  - [x] `result.eval == evaluate(inst, result.route)`; deterministic; stats keys present. `test_consistent_and_stats`
 - **Doc deltas:** PROBLEM.md Approach B: move tie order, and the `L = 20` candidate restriction for replace 1 with 2.
+  - Decisions made during implementation:
+    - Swap inserts the new town `u` at its cheapest position in the route without `r` (the spec did not fix the position; this matches add and replace 1 with 2). PROBLEM.md Approach B moves table.
+    - Replace 1 with 2 tries ordered pairs, so both `(u, v)` and `(v, u)` are tried; pairs with `pop(u) + pop(v) ≤ pop(r)` are skipped before any fuel is computed. PROBLEM.md Approach B.
+    - The `L` candidates are ranked with Approach A's key (`approach_a.insertion_key`: population / marginal fuel into the route without `r`, then population, then index), with no feasibility filter. PROBLEM.md Approach B.
+    - Add is offered only for towns with population > 0, since a move must raise population or, for 2-opt, lower fuel (code docstring; no doc needed).
+    - The "smallest indices" tie-break uses positions `(i, j)` for 2-opt and town indices `(t)`, `(r, u)`, `(r, u, v)` for the others (module docstring of `approach_b.py`).
+    - `stats["rounds"]` counts applied moves. `hit_max_rounds = 1` only when the cap stopped the search while an improving move was left, so `max_rounds=0` on a local optimum reports 0 (code; README stats description).
+    - An infeasible `initial` route raises `ValueError` (code docstring; README).
+    - Each round builds a `RouteState` for the route without each visited town, and one for each candidate `u` in replace 1 with 2, then scores insertions with the vectorised `best_insertions` (see the spec change under Interfaces). README: run time note.
+    - Tests seed the brute-force oracles from both the nearest-neighbour route and the empty route, because nearest neighbour alone leaves no room for add or replace 1 with 2; `test_best_move_chosen` asserts that all four move types are exercised (tests; no doc needed).
 
 ### S7 README run instructions
 

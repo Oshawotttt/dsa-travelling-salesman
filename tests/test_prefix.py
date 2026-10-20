@@ -105,3 +105,17 @@ def test_large_exponent_out_and_back():
         inst = Instance(BASE0, towns, Params(b=b))
         for route in ([1, 2, 3], [3, 2, 1], [1, 2], [2, 1, 3]):
             check_all_moves(inst, route)
+
+
+def test_best_insertions_matches_best_insertion():
+    for params in (Params(), Params(b=0.0), Params(b=1.2e-2)):
+        inst = random_instance(18, params=params)
+        for route in random_routes(inst, 19, count=10) + [[]]:
+            state = RouteState(inst, route)
+            towns = [t for t in range(1, inst.n + 1) if t not in route]
+            positions, fuels = state.best_insertions(towns)
+            for t, pos, fuel in zip(towns, positions, fuels):
+                want_pos, want_fuel = state.best_insertion(t)
+                assert fuel == pytest.approx(want_fuel, rel=1e-12)
+                assert state.insert_fuel(t, pos) == pytest.approx(want_fuel, rel=1e-12)
+    assert RouteState(inst, [1]).best_insertions([]) == ([], [])
