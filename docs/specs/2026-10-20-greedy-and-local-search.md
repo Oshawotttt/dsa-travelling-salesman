@@ -25,6 +25,8 @@
 
 Run order: S1, S2, S3, S4, S5, S6, S7.
 
+Doc deltas: every subtask's **Doc deltas** (including edits to `PROBLEM.md`) are applied in one docs update after the last subtask and the final code review, not inside the subtask. A subtask is complete without them. Decision (user, 2026-10-21): "Defer to step 6".
+
 External blockers:
 - `PROBLEM.md` has the user's uncommitted edits. The user commits them before `/loopeng-auto` runs, because S1, S5 and S6 doc deltas edit `PROBLEM.md`.
 - `.gitignore` ignores `docs/` and `data/`. Decision (user): "unignore docs". The `docs/` line is removed from `.gitignore` and that change is committed together with this spec, before S1. This also puts `docs/Project_2627T1.pdf` under git.
@@ -173,21 +175,29 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - Control: `b = 0` and `a = c × 60,000 ≈ 4.2 kg/km`, so the average burn per km stays the same and only the weight effect is removed (user). Provided by `control_params`.
   - With `b = 0` the closed form becomes `F₀_needed = R + a × D`.
 - **Acceptance criteria:**
-  - [ ] `haversine_km` is 0 for identical points; KL (3.1412, 101.68653) to Johor Bahru (1.4655, 103.7578) is 296 ± 2 km. `tests/test_model.py::test_haversine`
-  - [ ] `Instance.dist` is symmetric, zero on the diagonal, equal to `haversine_km`. `test_distance_matrix`
-  - [ ] `evaluate([])` gives population 0, distance 0, `fuel_needed == R`, feasible. `test_empty_route`
-  - [ ] For 3 random routes, `fuel_end(route, evaluate(route).fuel_needed) == R` within 1e-6 kg. `test_fuel_needed_closes`
-  - [ ] Closed form matches a step-by-step simulation (step 0.01 km, burn `u` per km, cargo drop at each town) within 0.1 kg on a ~500 km 3-town route. `test_matches_simulation`
-  - [ ] With `b > 0`, reversing a route changes `fuel_needed`. `test_order_dependent`
-  - [ ] With `b = 0`, `fuel_needed == R + a·D` and reversal does not change it; `b = 1e-12` is within 1e-3 kg of the `b = 0` value. `test_b_zero_control`
-  - [ ] `Params()` resolves to `a = 7.0e-5 × 33,600 = 2.352`, `b = 7.0e-5`; explicit `a`, `b` override; `control_params(Params())` has `b == 0`, `a == 4.2` (to 1e-9), other fields unchanged. `test_params_defaults_and_control`
-  - [ ] Each failure reason is produced by a minimal case: bad index, duplicate, payload (`w·k > C`), fuel_cap, takeoff_weight. `test_infeasible_reasons`
-  - [ ] `BASES` has 5 entries with the IDs 1734611, 7609811, 7567448, 1737158, 1733926. `test_bases`
-  - [ ] With the CSV present: 745 towns at `min_population=0`; each base's nearest town distance matches the PROBLEM.md table (30.8, 39.4, 35.9, 40.0, 39.7 km) within 0.5 km. Skipped if file missing. `test_data_smoke`
+  - [x] `haversine_km` is 0 for identical points; KL (3.1412, 101.68653) to Johor Bahru (1.4655, 103.7578) is 296 ± 2 km. `tests/test_model.py::test_haversine`
+  - [x] `Instance.dist` is symmetric, zero on the diagonal, equal to `haversine_km`. `test_distance_matrix`
+  - [x] `evaluate([])` gives population 0, distance 0, `fuel_needed == R`, feasible. `test_empty_route`
+  - [x] For 3 random routes, `fuel_end(route, evaluate(route).fuel_needed) == R` within 1e-6 kg. `test_fuel_needed_closes`
+  - [x] Closed form matches a step-by-step simulation (step 0.01 km, burn `u` per km, cargo drop at each town) within 0.1 kg on a ~500 km 3-town route. `test_matches_simulation`
+  - [x] With `b > 0`, reversing a route changes `fuel_needed`. `test_order_dependent`
+  - [x] With `b = 0`, `fuel_needed == R + a·D` and reversal does not change it; `b = 1e-12` is within 1e-3 kg of the `b = 0` value. `test_b_zero_control`
+  - [x] `Params()` resolves to `a = 7.0e-5 × 33,600 = 2.352`, `b = 7.0e-5`; explicit `a`, `b` override; `control_params(Params())` has `b == 0`, `a == 4.2` (to 1e-9), other fields unchanged. `test_params_defaults_and_control`
+  - [x] Each failure reason is produced by a minimal case: bad index, duplicate, payload (`w·k > C`), fuel_cap, takeoff_weight. `test_infeasible_reasons`
+  - [x] `BASES` has 5 entries with the IDs 1734611, 7609811, 7567448, 1737158, 1733926. `test_bases`
+  - [x] With the CSV present: 745 towns at `min_population=0`; each base's nearest town distance matches the PROBLEM.md table (30.8, 39.4, 35.9, 40.0, 39.7 km) within 0.5 km. Skipped if file missing. `test_data_smoke`
 - **Doc deltas:** PROBLEM.md Parameters and Evaluation plan:
   - New defaults `E = 33,600`, `C = 19,630` (98 drops), `F = 21,100`, `c = 7.0e-5`, with sources: Lockheed Service News V16N1 (weights, fuel), SKYbrary and NCAR C-130 handbook (cruise ≈ 2,270 kg/h at 537 km/h ≈ 4.2 kg/km), AFI 11-202 Vol 3 (reserve).
   - `a` and `b` are separate inputs, defaults `a = c × E`, `b = c`.
   - Control is `b = 0`, `a = c × 60,000 ≈ 4.2 kg/km`, replacing "`c = 0` is the control" (with `a = c × E`, `c = 0` would burn no fuel at all).
+  - Decisions made during implementation:
+    - Base coordinates use the full precision of `data/MY.txt` (the PROBLEM.md table rounds them); the table stays as is.
+    - `load_towns` keeps towns with `population >= min_population`, so `min_population=0` keeps all 745 (code docstring).
+    - The closed form is computed as `F₀_needed = R·e^(bD) + a·(e^(bD) − 1)/b + w·Σ(e^(b·sᵢ) − 1)`, `sᵢ` = distance flown before drop `i`, using `expm1`; it equals `(R − K)·e^(bD)` and gives `R + a·D` at `b = 0` without a special case in `evaluate` (`fuel_end` keeps a `b = 0` branch, since its form divides by `b`). PROBLEM.md Fuel model: add this form.
+    - An `e^x` that would overflow returns `inf` instead of raising, and a resulting `0 × inf = NaN` is mapped to `inf`, so such routes are infeasible with reason `fuel_cap` (code comment; `test_overflow_is_infeasible`).
+    - A route with a bad index evaluates to population 0, distance 0, `fuel_needed = inf` (code; no doc needed).
+    - Route indices accept any integer type (`operator.index`), so numpy integers work (code; no doc needed).
+    - The distance matrix is computed once with numpy and stored as nested Python lists, because scalar lookups on lists are faster than on numpy arrays (code; no doc needed).
 
 ### S2 Route prefix sums (O(1) move costs)
 
