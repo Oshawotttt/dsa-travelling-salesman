@@ -23,6 +23,10 @@ requirements.txt     dependencies (numpy, pytest)
 pyproject.toml       pytest configuration
 ```
 
+Implemented: nearest neighbour, Approach A (heap and re-scan) and Approach B.
+Not implemented: the population greedy baseline, the exact DP, and the experiment scripts and plots.
+Wind, climb, descent and airspace are not modelled.
+
 ## Setup
 
 Python 3.10 or later.
@@ -84,6 +88,7 @@ Every solver returns a `SolveResult` with:
   - `local_search`: `rounds` (moves applied), one count per move type (`two_opt`, `add`, `swap`, `replace_1_2`), and `hit_max_rounds` (1 when `max_rounds` stopped the search with an improving move left).
 
 To evaluate any route yourself, use `airdrop.evaluate(inst, route)`.
+`load_towns` keeps towns with `population >= min_population`, so the default `min_population=0` keeps all 745.
 All aircraft constants are fields of `Params` (`F`, `E`, `C`, `MTOW`, `c`, `w`, `R`, and optionally `a` and `b`).
 `local_search` takes `initial` (a feasible route; an infeasible one raises `ValueError`), `L` (candidates per removed town for replace 1 with 2, default 20) and `max_rounds` (default 10,000).
 

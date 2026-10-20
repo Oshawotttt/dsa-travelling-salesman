@@ -86,6 +86,10 @@ fuel_end  = F₀ × e^(−b·D) + K          (K depends only on the route)
 F₀_needed = (R − K) × e^(b·D)
 ```
 
+The code computes the same value as `F₀_needed = R·e^(bD) + a·(e^(bD) − 1)/b + w·Σ(e^(b·sᵢ) − 1)`, where `sᵢ` is the distance flown before drop `i`, using `expm1`. At `b = 0` it gives `R + a·D` without a special case.
+An `e^x` that would overflow gives `inf` instead of raising, and a resulting `0 × inf = NaN` is mapped to `inf`, so such a route is infeasible with reason `fuel_cap`.
+A route with a bad index evaluates to population 0, distance 0 and `fuel_needed = inf`.
+
 We checked this formula against a step-by-step numerical simulation; the two agree to within 0.01 kg.
 On a 2,572 km test route, counting fuel weight raised the burn from 7,905 kg to 10,410 kg (about 30%).
 
@@ -105,7 +109,10 @@ Each approach solves the whole variant: all four broken assumptions at once.
 
 ### Baselines
 
-- **Nearest neighbour with fuel cutoff:** classic nearest neighbour. Before flying to the next town, it checks that the plane could still fly home from there with the reserve.
+- **Nearest neighbour with fuel cutoff:** classic nearest neighbour. Before flying to the next town, it checks that the plane could still fly home from there with the reserve (the check is `evaluate(route + [t]).feasible`).
+  - When the nearest town does not fit, it is skipped and the nearest town that fits is taken; the route stops when no town fits.
+  - A town that fails the check is dropped for the rest of the run: appending to a longer route never needs less fuel, and the payload and takeoff limits only tighten.
+  - Distance ties go to the smaller index.
 - **Population greedy:** always fly to the most populous town that still fits the fuel check.
 
 ### Approach A: Greedy insertion with a lazy heap
@@ -114,6 +121,9 @@ Each approach solves the whole variant: all four broken assumptions at once.
 - Score each unvisited town by `population / marginal fuel`, where marginal fuel is the extra fuel needed to insert it at its cheapest position.
 - Marginal fuel includes the cost of carrying the town's 200 kg from the base to its drop point, so the weight model drives the choices.
 - Insert the best town if the route stays feasible, and repeat until no town fits.
+- A marginal fuel ≤ 0 gives score `+inf`. Score ties go to the larger population, then the smaller index.
+- A town whose cheapest insertion does not fit is discarded for the rest of the run: removing a town never raises the fuel needed, so it cannot become feasible later. The cheapest position is the only one checked, since feasibility is monotone in fuel.
+- The route state is rebuilt (O(k)) after every insertion.
 - Each insertion cost is evaluated in O(1) per position, using the same prefix sums as Approach B.
 - **Data structure: max-heap with lazy re-evaluation.**
   1. Pop the top town and recompute its true score against the current route.
@@ -136,14 +146,20 @@ Each approach solves the whole variant: all four broken assumptions at once.
   | Swap | Replaces a visited town with a more populous unvisited one | Route stays feasible, population rises |
   | Replace 1 with 2 | Removes one visited town and inserts two unvisited ones | Route stays feasible, population rises |
 
-- Each round, apply the move with the largest population gain. Ties go to the move that needs the least fuel.
+- Swap inserts the new town at its cheapest position in the route without the removed town.
+- Replace 1 with 2 is restricted to a candidate set. For each removed town `r`, take the `L = 20` unvisited towns with the best single-insertion score into the route without `r`. The score is Approach A's key (population / marginal fuel, then population, then index), with no feasibility filter. Try every ordered pair `(u, v)` from them (so `(u, v)` and `(v, u)`): insert `u` at its cheapest position, then `v` at its cheapest position. Pairs with `pop(u) + pop(v) ≤ pop(r)` are skipped before any fuel is computed. `L` is a `local_search` argument.
+- Add is offered only for towns with population > 0.
+- Each round, apply the move with the largest population gain. Ties go to the move that needs the least fuel. Remaining ties (same gain, same fuel) go by move type in the order 2-opt, add, swap, replace 1 with 2, then by smallest indices (positions `(i, j)` for 2-opt; town indices `(t)`, `(r, u)`, `(r, u, v)` for the others).
+- An infeasible starting route is rejected with `ValueError`. A round is one applied move. The search stops at `max_rounds` (default 10,000) and flags it only if an improving move was left.
 - Repeat until no move improves the route.
 - A plain "drop a town" move is not used: on its own it always lowers population, so it would never be accepted.
 - **Data structure: exponential-weighted prefix sums** over the route.
-  - Store prefix sums of distance and of `w × e^(b × distance so far)`.
+  - Store prefix sums of distance and of `φ(Sₘ) = (e^(b·Sₘ) − 1)/b` (`φ = Sₘ` at `b = 0`), `Sₘ` = distance flown to drop `m`. It carries the same information as `w × e^(b × distance so far)`, has the `b = 0` limit without dividing by `b`, and avoids subtracting `w·k` from a large sum.
+  - The shift rule `φ(x + δ) = e^(b·δ)·φ(x) + φ(δ)` moves all drops after a move by `δ` in O(1). A reversed segment uses suffix sums of `φ(D − Sₘ)`.
   - Reversing segment `i..j` changes `D` by the change in the two boundary edges. It shifts `Rᵢ` for every town before the segment by the same amount, which scales their sum by one factor. Towns inside the segment are covered by the prefix sum.
   - This gives O(1) evaluation per move and an O(n) rebuild after each accepted move.
-  - To avoid overflow in `e^(b·x)`, rescale the sums or work in log space.
+  - To avoid overflow and precision loss in `e^(b·x)`, every stored term is `φ` of a distance in `[0, D]`, each range sum subtracts the smaller terms, and the reversed segment is rescaled to its last drop. Nothing overflows before the answer does. (Computing the segment through `φ(A)` with `A ≈ 2D` lost all precision once `b·D ≳ 30`.)
+  - Each round builds a route state for the route without each visited town, and one per candidate `u` in replace 1 with 2, and scores insertions with a numpy-vectorised `best_insertions`; the scalar loop took tens of seconds per round on 745 towns.
 
 ### Other approaches considered
 
@@ -161,7 +177,7 @@ Each approach solves the whole variant: all four broken assumptions at once.
 - **Optimality gap:** exact DP (below) on 10 random 12-town samples, with `F` set so about half the towns fit. Report the average and worst gap: heuristic population ÷ optimal population.
 - **Data-structure comparison:** lazy heap against full re-scan in Approach A.
 - **Base comparison:** population reached from each of the five bases at `F = 20 t`.
-- **Control:** `c = 0` switches off the weight model and reduces the problem to the plain Orienteering Problem. It isolates the effect of the weight-dependent cost.
+- **Control:** `b = 0` with `a = c × 60,000 ≈ 4.2 kg/km` switches off the weight model and reduces the problem to the plain Orienteering Problem (`F₀_needed = R + a × D`). The average burn per km stays the same and only the weight effect is removed. It isolates the effect of the weight-dependent cost. (`c = 0` is not the control: with `a = c × E` it would burn no fuel at all.)
 - **Complexity analysis** of each approach, including the O(1) move evaluation with prefix sums.
 
 ### Exact DP
@@ -212,17 +228,20 @@ Gugusan Aring is cleared plantation land.
 
 The constants are inputs to the problem, not fixed values.
 Every solver takes them as arguments, and experiments sweep some of them.
-The C-130H figures are approximate and must be checked against a cited source.
+The C-130H figures are approximate.
+Sources: Lockheed Service News V16N1 (weights, fuel), SKYbrary and the NCAR C-130 handbook (cruise about 2,270 kg/h at 537 km/h, no gross weight stated; medium/low trust), AFI 11-202 Vol 3 (reserve; low trust).
+Base coordinates in code use the full precision of `data/MY.txt`; the Bases table rounds them.
 
 | Parameter | Meaning | Value / experiment |
 |---|---|---|
 | `base` | Start and end location | Five candidate sites; compared at `F = 20 t` |
-| `F` | Fuel cap (tank size) | Swept from about 3 t to 20 t; default 20 t |
-| `E` | Empty weight | About 34,400 kg |
-| `C` | Maximum payload | About 19,000 kg (95 drops) |
-| `MTOW` | Maximum takeoff weight | About 70,300 kg (cargo + fuel ≤ about 36 t) |
-| `c` | Fuel per km per kg of total mass | About 7.8e-5, from about 2,300 kg/h at 540 km/h; `c = 0` is the control |
-| `a = c × E` | Fuel per km for the empty plane | About 2.7 kg/km |
+| `F` | Fuel cap (tank size) | Swept from about 3 t to 20 t; default 21,100 kg |
+| `E` | Empty weight | Default 33,600 kg |
+| `C` | Maximum payload | Default 19,630 kg (98 drops) |
+| `MTOW` | Maximum takeoff weight | Default 70,300 kg (cargo + fuel ≤ 36,700 kg) |
+| `c` | Fuel per km per kg of total mass | Default 7.0e-5, from cruise of about 2,270 kg/h at 537 km/h (about 4.2 kg/km) |
+| `a` | Fuel per km for the empty plane | Separate input; default `c × E` (about 2.35 kg/km) |
+| `b` | Extra fuel per km per kg of cargo and fuel on board | Separate input; default `c`. Control: `b = 0` with `a = c × 60,000 ≈ 4.2 kg/km` |
 | `w` | Weight of one drop | 200 kg |
 | `R` | Fuel reserve after landing | About 1,700 kg (45 minutes of flight) |
 | `n` | Number of candidate towns (set by a population threshold) | 83, 144, 355, 745 for run time; 12 for the exact DP |
