@@ -232,14 +232,18 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - A town whose cheapest insertion is infeasible is discarded for the rest of the run (removing a town never raises fuel needed, so it cannot become feasible later).
   - Marginal ≤ 0 → score `+inf`; ties by larger population, then smaller index.
 - **Acceptance criteria:**
-  - [ ] Result is feasible on random instances (fixed seeds). `tests/test_approach_a.py::test_scan_feasible`
-  - [ ] `result.eval == evaluate(inst, result.route)`. `test_result_matches_evaluate`
-  - [ ] Each step inserts the argmax town at its cheapest position, checked by a brute-force oracle in the test that uses only `evaluate`. `test_scan_is_argmax`
-  - [ ] `F` below `R` + any one town's need gives empty route; huge `F`, `C` and `MTOW` visit all towns. `test_budget_extremes`
-  - [ ] Hand-built case: a heavy-route town far from base loses to one near base with equal population (weight carried from base counts). `test_weight_drives_choice`
-  - [ ] Deterministic across runs. `test_scan_deterministic`
-  - [ ] `stats` has `score_evals` and `insertions`. `test_scan_stats`
-- **Doc deltas:** none
+  - [x] Result is feasible on random instances (fixed seeds). `tests/test_approach_a.py::test_scan_feasible`
+  - [x] `result.eval == evaluate(inst, result.route)`. `test_result_matches_evaluate`
+  - [x] Each step inserts the argmax town at its cheapest position, checked by a brute-force oracle in the test that uses only `evaluate`. `test_scan_is_argmax`
+  - [x] `F` below `R` + any one town's need gives empty route; huge `F`, `C` and `MTOW` visit all towns. `test_budget_extremes`
+  - [x] Hand-built case: a heavy-route town far from base loses to one near base with equal population (weight carried from base counts). `test_weight_drives_choice`
+  - [x] Deterministic across runs. `test_scan_deterministic`
+  - [x] `stats` has `score_evals` and `insertions`. `test_scan_stats`
+- **Doc deltas:** none from the spec. Decisions made during implementation:
+  - A town fits when `w·(k+1) ≤ C` and its cheapest-insertion fuel is `≤ fuel_limit(k+1)`; the cheapest position is the only one checked, since feasibility is monotone in fuel (`approach_a.fits`, code docstring; no doc needed).
+  - `score_evals` counts one per `best_insertion` call (one candidate scored against the current route) (code; README can mention it with the stats).
+  - The scan visits candidates in index order and drops a town as soon as its cheapest insertion does not fit (code comment; no doc needed).
+  - `RouteState` is rebuilt (O(k)) after every insertion (PROBLEM.md already says O(n) rebuild after an accepted move; no doc needed).
 
 ### S4 Approach A, lazy heap selector
 
