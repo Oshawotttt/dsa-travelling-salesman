@@ -258,13 +258,18 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - `heapq` with negated keys; tie keys use the S3 tie order.
   - `audit=True` computes the re-scan argmax at each step without changing the heap's pick.
 - **Acceptance criteria:**
-  - [ ] Heap result is feasible on the S3 random instances. `test_heap_feasible`
-  - [ ] First insertion equals the scan's first insertion. `test_heap_first_pick_matches_scan`
-  - [ ] With `audit=True`, `mismatches == 0` implies the heap route equals the scan route on the same instance. `test_audit_consistent`
-  - [ ] Hand-built case where inserting a town opens a cheaper slot for another town (score rises): the audit reports ≥ 1 mismatch. `test_audit_detects_rise`
-  - [ ] `stats` has `score_evals`, `insertions`, `heap_pops`, `heap_pushes`; `mismatches` only with audit. `test_heap_stats`
-  - [ ] Deterministic. `test_heap_deterministic`
-- **Doc deltas:** none
+  - [x] Heap result is feasible on the S3 random instances. `test_heap_feasible`
+  - [x] First insertion equals the scan's first insertion. `test_heap_first_pick_matches_scan`
+  - [x] With `audit=True`, `mismatches == 0` implies the heap route equals the scan route on the same instance. `test_audit_consistent`
+  - [x] Hand-built case where inserting a town opens a cheaper slot for another town (score rises): the audit reports ≥ 1 mismatch. `test_audit_detects_rise`
+  - [x] `stats` has `score_evals`, `insertions`, `heap_pops`, `heap_pushes`; `mismatches` only with audit. `test_heap_stats`
+  - [x] Deterministic. `test_heap_deterministic`
+- **Doc deltas:** none from the spec. Decisions made during implementation:
+  - Heap entries are `(−score, −population, index)`, so `heapq`'s min order is the S3 tie order and each town has exactly one entry at a time (code docstring; no doc needed).
+  - Towns that do not fit into the empty route are never pushed; `heap_pushes` counts the initial pushes as well as the push-backs (code; README stats description).
+  - "Still beats the next key" compares the fresh full key with the current top entry; an empty heap counts as beaten (code docstring; no doc needed).
+  - The audit's re-scan argmax covers the popped town plus every town still in the heap, feasible ones only, and its score evaluations are not added to `score_evals`, so stats match with and without audit (code; README stats description).
+  - The scan and the audit share one argmax helper (`approach_a._argmax`) (code; no doc needed).
 
 ### S5 Nearest-neighbour seed for B
 
