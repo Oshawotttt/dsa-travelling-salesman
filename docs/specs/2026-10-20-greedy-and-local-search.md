@@ -282,11 +282,15 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - When the nearest town does not fit, skip it and take the nearest town that fits; stop when no town fits. Decision (user): "yes" to this proposal.
   - Distance ties: smaller index.
 - **Acceptance criteria:**
-  - [ ] Result is feasible; deterministic. `tests/test_baseline.py::test_nn_feasible`
-  - [ ] Each step goes to the nearest town that passes the check, skipping nearer towns that fail it, verified by an oracle in the test. `test_nn_is_nearest`
-  - [ ] Hand-built case where the nearest town fails the check and a farther one passes: the farther one is taken. `test_nn_skips_unfit`
-  - [ ] `result.eval == evaluate(inst, result.route)`. `test_nn_consistent`
+  - [x] Result is feasible; deterministic. `tests/test_baseline.py::test_nn_feasible`
+  - [x] Each step goes to the nearest town that passes the check, skipping nearer towns that fail it, verified by an oracle in the test. `test_nn_is_nearest`
+  - [x] Hand-built case where the nearest town fails the check and a farther one passes: the farther one is taken. `test_nn_skips_unfit`
+  - [x] `result.eval == evaluate(inst, result.route)`. `test_nn_consistent`
 - **Doc deltas:** PROBLEM.md Baselines: nearest neighbour skips towns that do not fit and stops when none fits.
+  - Decisions made during implementation:
+    - A town that fails the check is dropped for the rest of the run: appending to a longer route never needs less fuel and the payload and takeoff limits only tighten, so it cannot pass later. The result is the same, with fewer checks (code comment; PROBLEM.md Baselines can note it).
+    - `stats` for `nearest_neighbour` are `"checks"` (calls to `evaluate` for a candidate) and `"steps"` (towns added); the spec left them open (code; README stats description).
+    - `nearest_neighbour` returns the `SolveResult` type defined in `approach_a` (code; no doc needed).
 
 ### S6 Approach B, local search
 
