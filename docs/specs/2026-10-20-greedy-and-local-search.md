@@ -210,12 +210,16 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
   - Avoid overflow in `e^(b·x)` by rescaling or log space (docs: PROBLEM.md).
   - `b = 0` uses the limit form (no division by `b`).
 - **Acceptance criteria:**
-  - [ ] On 50 random routes (fixed seeds, k up to 30), `insert_fuel`, `remove_fuel` and `two_opt_fuel` equal `evaluate` on the modified route within 1e-6 relative, for every valid position. `tests/test_prefix.py::test_matches_evaluate`
-  - [ ] Same check with `b = 0`. `test_matches_evaluate_b_zero`
-  - [ ] `best_insertion` returns the minimum over all positions, smallest position on ties. `test_best_insertion`
-  - [ ] Works on the empty route (insert at pos 0) and single-town route. `test_small_routes`
-  - [ ] With `b = 1e-3` and a 20,000 km route, results are finite and match `evaluate`. `test_no_overflow`
-- **Doc deltas:** none
+  - [x] On 50 random routes (fixed seeds, k up to 30), `insert_fuel`, `remove_fuel` and `two_opt_fuel` equal `evaluate` on the modified route within 1e-6 relative, for every valid position. `tests/test_prefix.py::test_matches_evaluate`
+  - [x] Same check with `b = 0`. `test_matches_evaluate_b_zero`
+  - [x] `best_insertion` returns the minimum over all positions, smallest position on ties. `test_best_insertion`
+  - [x] Works on the empty route (insert at pos 0) and single-town route. `test_small_routes`
+  - [x] With `b = 1e-3` and a 20,000 km route, results are finite and match `evaluate`. `test_no_overflow`
+- **Doc deltas:** none from the spec. Decisions made during implementation:
+  - The prefix sums hold `φ(Sₘ) = (e^(b·Sₘ) − 1)/b` (with `φ = Sₘ` at `b = 0`) rather than `w·e^(b·Sₘ)`, `Sₘ` = distance flown to drop `m`. It carries the same information, has the `b = 0` limit without dividing by `b`, and avoids subtracting `w·k` from a large sum. PROBLEM.md Approach B data structure: say the sums use this form.
+  - The shift rule `φ(x + δ) = e^(b·δ)·φ(x) + φ(δ)` moves all drops after a move by `δ` in O(1). A reversed segment `i..j` (with `B = S_(j+1)`) uses suffix sums of `φ(D − Sₘ)`: `φ(A − Sₘ) = e^(b·(B − Sₘ))·φ(A − B) + φ(B − Sₘ)`, and `φ(B − Sₘ)` is `φ(D − Sₘ)` shifted by `−(D − B)` (module docstring of `airdrop/prefix.py`).
+  - Overflow and precision (rescaling): every stored term is `φ` of a distance in `[0, D]`; each range sum subtracts the smaller terms (prefix sums of the growing `φ(Sₘ)`, suffix sums of the shrinking `φ(D − Sₘ)`); the reversed segment is rescaled to its last drop `B`, so no product is larger than a term of the answer. Nothing overflows before the answer does, and an overflowing `e^x` gives `inf` (S1). A first version computed the segment through `φ(A)` with `A ≈ 2D` and lost all precision once `b·D ≳ 30` (module docstring; `test_no_overflow`, `test_large_exponent_out_and_back`).
+  - `evaluate` and `RouteState` share one helper, `model.fuel_needed_from(inst, D, Σφ)`, so they cannot drift apart (code; no doc needed).
 
 ### S3 Approach A, full re-scan selector
 

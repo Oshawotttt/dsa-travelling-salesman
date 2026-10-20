@@ -160,6 +160,17 @@ def _drop_offsets(inst: Instance, route: Sequence[int]) -> tuple[list[float], fl
     return offsets, s + inst.dist(prev, 0)
 
 
+def fuel_needed_from(inst: Instance, D: float, drops: float) -> float:
+    """F0_needed from the total distance D and drops = sum(phi(b, s_i)), s_i = distance flown
+    before drop i.
+
+    F0_needed = (R - K) e^(bD) = R e^(bD) + a (e^(bD) - 1)/b + w * sum(e^(b s_i) - 1).
+    """
+    p = inst.params
+    fuel = p.R * exp(inst.b * D) + inst.a * phi(inst.b, D) + p.w * inst.b * drops
+    return math.inf if math.isnan(fuel) else fuel  # NaN is 0 * inf after an overflow
+
+
 def evaluate(inst: Instance, route: Sequence[int]) -> RouteEval:
     p = inst.params
     k = len(route)
@@ -169,12 +180,7 @@ def evaluate(inst: Instance, route: Sequence[int]) -> RouteEval:
     route = [operator.index(i) for i in route]
     population = sum(inst.population(t) for t in route)
     offsets, D = _drop_offsets(inst, route)
-    b = inst.b
-    # F0_needed = (R - K) e^(bD) = R e^(bD) + a (e^(bD) - 1)/b + w * sum(e^(b s_i) - 1),
-    # s_i = distance flown before drop i
-    fuel = p.R * exp(b * D) + inst.a * phi(b, D) + p.w * b * sum(phi(b, s) for s in offsets)
-    if math.isnan(fuel):  # 0 * inf after an overflow
-        fuel = math.inf
+    fuel = fuel_needed_from(inst, D, sum(phi(inst.b, s) for s in offsets))
     if len(set(route)) < k:
         reason = "duplicate"
     elif cargo > p.C:
