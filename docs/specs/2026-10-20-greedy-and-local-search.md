@@ -346,9 +346,13 @@ Score in Approach A: `population(t) / (best_insertion(t).fuel − fuel_needed)`.
 - **Seams:** none (docs only)
 - **Decisions:** README must describe folder structure and run instructions (docs: Project_2627T1.pdf §6a).
 - **Acceptance criteria:**
-  - [ ] The README example snippet, saved to a script and run with `python` from repo root, exits 0.
-  - [ ] `python -m pytest` passes.
+  - [x] The README example snippet, saved to a script and run with `python` from repo root, exits 0.
+  - [x] `python -m pytest` passes.
 - **Doc deltas:** README.md itself.
+  - Decisions made during implementation:
+    - The example loads towns with `population >= 100,000` (86 towns), so it runs in about 2 s; the 745-town run time is stated in prose instead (README).
+    - The README documents each solver's `stats` keys, since the spec left `nearest_neighbour`'s open and several counting rules were decided in S4–S6 (README).
+    - Proved by saving the README's `python` block to a file and running `python - < <file>` from the repo root (stdin keeps the repo root on `sys.path`); exit code 0 (no doc needed).
 
 ## 6. Human checks
 
