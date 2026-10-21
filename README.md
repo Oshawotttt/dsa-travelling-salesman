@@ -24,7 +24,7 @@ pyproject.toml       pytest configuration
 ```
 
 Implemented: nearest neighbour, Approach A (heap and re-scan) and Approach B.
-Not implemented: the population greedy baseline, the exact DP, and the experiment scripts and plots.
+Not implemented: the exact DP, and the experiment scripts and plots.
 Wind, climb, descent and airspace are not modelled.
 
 ## Setup

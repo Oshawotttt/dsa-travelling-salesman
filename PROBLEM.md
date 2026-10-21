@@ -107,13 +107,12 @@ On a 2,572 km test route, counting fuel weight raised the burn from 7,905 kg to 
 
 Each approach solves the whole variant: all four broken assumptions at once.
 
-### Baselines
+### Baseline
 
 - **Nearest neighbour with fuel cutoff:** classic nearest neighbour. Before flying to the next town, it checks that the plane could still fly home from there with the reserve (the check is `evaluate(route + [t]).feasible`).
   - When the nearest town does not fit, it is skipped and the nearest town that fits is taken; the route stops when no town fits.
   - A town that fails the check is dropped for the rest of the run: appending to a longer route never needs less fuel, and the payload and takeoff limits only tighten.
   - Distance ties go to the smaller index.
-- **Population greedy:** always fly to the most populous town that still fits the fuel check.
 
 ### Approach A: Greedy insertion with a lazy heap
 
@@ -171,7 +170,7 @@ Each approach solves the whole variant: all four broken assumptions at once.
 ## Evaluation plan
 
 - **Main comparison:** population reached against the fuel cap `F`, swept from about 3 t to 20 t, for:
-  - nearest neighbour, population greedy, Approach A, and Approach B (seeded from nearest neighbour);
+  - nearest neighbour, Approach A, and Approach B (seeded from nearest neighbour);
   - an extra row, **B on A's route**, labelled as a combined result and kept off the main A-vs-B chart. It shows how much local search still adds on top of a good route.
 - **Run time:** against number of towns `n`, using population thresholds from `eda.ipynb` (for example 83, 144, 355 and 745 towns).
 - **Optimality gap:** exact DP (below) on 10 random 12-town samples, with `F` set so about half the towns fit. Report the average and worst gap: heuristic population ÷ optimal population.
