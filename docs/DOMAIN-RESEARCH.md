@@ -19,7 +19,6 @@ Unit conversions used throughout: 1 lb = 0.45359237 kg, 1 US gal = 3.785411784 L
 | `R` | 1,700 kg | 45 minutes at ≈ 2,270 kg/h = 1,701 kg | Medium (rule is conservative for a turboprop) |
 | `EARTH_RADIUS_KM` | 6,371.0088 km | IUGG mean Earth radius R₁ of the GRS 80 ellipsoid | High |
 | Rural base filters | 1–150 m, 20–40 km | Our design choice, see [Base selection](#base-selection-filters) | Design choice, not sourced |
-| `F` sweep | 3,000–20,000 kg | Bounded by the reserve below and the tank above | Derived |
 
 ## Aircraft: why the C-130H
 
@@ -69,7 +68,6 @@ This is a real C-130H limit, and it is why the model has the constraint `F₀ �
 
 **Why internal tanks only:** with pylon tanks the fuel capacity (about 29,300 kg) is far above what `MTOW − E` lets the plane load with cargo on board, so the tank stops being a binding limit.
 Using the internal tanks keeps the tank limit and the takeoff limit both meaningful.
-`F` is also swept in the experiments, so the exact default matters less than the range.
 
 ## Fuel burn: `c`, `M_REF`, `a`, `b`
 
@@ -175,8 +173,7 @@ They are design choices, not values from a source. Each has a stated reason.
 
 | Range | Value | Reason |
 |---|---|---|
-| `F` sweep | 3,000 → 20,000 kg | Upper end is just below the internal tank, 21,100 kg. Lower end leaves 1,300 kg above the reserve: about 300 km of flight at 4.2 kg/km, so a short trip to nearby towns is still possible |
-| Base comparison | `F = 20,000 kg` | Near the full internal tank, so the base location, not the tank, limits the route |
+| Base comparison | `F = 21,100 kg` | The full internal tank, so the base location, not the tank, limits the route |
 
 ## Numerical constants (not domain values)
 

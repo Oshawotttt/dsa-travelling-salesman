@@ -169,13 +169,18 @@ Each approach solves the whole variant: all four broken assumptions at once.
 
 ## Evaluation plan
 
-- **Main comparison:** population reached against the fuel cap `F`, swept from about 3 t to 20 t, for:
+Every comparison uses the default fuel cap `F = 21,100 kg` (the full internal tank) except the optimality gap. There is no fuel sweep (see [DECISIONS.md](DECISIONS.md), "No fuel sweep").
+
+- **Data-structure comparison:** lazy heap against full re-scan in Approach A, against number of towns.
+- **Run time:** against number of towns `n`, using population thresholds 100,000 / 50,000 / 15,000 / 0.
+- **Base comparison:** population reached from each of the six bases at `F = 21,100 kg`, rural against non-rural in each region, for:
   - nearest neighbour, Approach A, and Approach B (seeded from nearest neighbour);
   - an extra row, **B on A's route**, labelled as a combined result and kept off the main A-vs-B chart. It shows how much local search still adds on top of a good route.
-- **Run time:** against number of towns `n`, using population thresholds from `eda.ipynb` (for example 83, 144, 355 and 745 towns).
-- **Optimality gap:** exact DP (below) on 10 random 12-town samples, with `F` set so about half the towns fit. Report the average and worst gap: heuristic population ÷ optimal population.
-- **Data-structure comparison:** lazy heap against full re-scan in Approach A.
-- **Base comparison:** population reached from each of the six bases at `F = 20 t`, rural against non-rural in each region.
+- **Optimality gap:** exact DP (below) on 10 random 12-town samples of Peninsular towns, from the Perak base, at two lower fixed fuel caps, each the same for all 10 samples and each an assumption (a partial fuel load for a short-range sortie):
+  - `F_full`: the smallest multiple of 10 kg at which the DP route visits all 12 towns in at least 8 of the 10 samples;
+  - `F_tight`: the smallest multiple of 10 kg at which the DP routes visit on average at least 80% of the 12 towns.
+
+  Report the average and worst gap per algorithm and per `F`: heuristic population ÷ optimal population.
 - **Complexity analysis** of each approach, including the O(1) move evaluation with prefix sums.
 
 ### Exact DP
@@ -237,15 +242,15 @@ Each sits inside a dense cluster of towns: 105 towns lie within 50 km of KLIA, a
 ## Parameters
 
 The constants are inputs to the problem, not fixed values.
-Every solver takes them as arguments, and experiments sweep some of them.
+Every solver takes them as arguments, and experiments vary some of them.
 The C-130H figures are approximate.
 Sources: Lockheed Service News V16N1 (weights, fuel), SKYbrary and the NCAR C-130 handbook (cruise about 2,270 kg/h at 537 km/h, no gross weight stated; medium/low trust), AFI 11-202 Vol 3 (reserve; low trust).
 Base coordinates in code use the full precision of `data/MY.txt`; the Bases table rounds them.
 
 | Parameter | Meaning | Value / experiment |
 |---|---|---|
-| `base` | Start and end location | Six candidate sites, three rural and three non-rural; compared at `F = 20 t` |
-| `F` | Fuel cap (tank size) | Swept from about 3 t to 20 t; default 21,100 kg |
+| `base` | Start and end location | Six candidate sites, three rural and three non-rural; compared at `F = 21,100 kg` |
+| `F` | Fuel cap (tank size) | Default 21,100 kg, used in every experiment except the optimality gap (`F_full`, `F_tight`) |
 | `E` | Empty weight | Default 33,600 kg |
 | `C` | Maximum payload | Default 19,630 kg (98 drops) |
 | `MTOW` | Maximum takeoff weight | Default 70,300 kg (cargo + fuel ≤ 36,700 kg) |

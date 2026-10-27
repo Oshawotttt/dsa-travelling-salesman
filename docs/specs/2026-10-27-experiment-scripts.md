@@ -146,11 +146,16 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
   - The experiments are renumbered 1–4: heap vs scan, run time, bases, optimality gap, with folders `e1_heap_vs_scan`, `e2_run_time`, `e3_bases`, `e4_optimality_gap`. Decision (user): "yes". Doc delta: `docs/EXPERIMENT.md`.
   - `docs/EXPERIMENT.md` keeps the 2026-10-21 trial result for heap vs scan (at 21,100 and 8,000 kg) as historical, labelled as a trial with a varied `F`. `transient` choice of wording.
 - **Acceptance criteria:**
-  - [ ] `docs/EXPERIMENT.md` lists exactly 4 experiments, numbered 1–4, and no "Fuel sweep" row. `grep -n "Fuel sweep" docs/EXPERIMENT.md` finds no table row.
-  - [ ] `docs/DECISIONS.md` has a "No fuel sweep" entry with **Change**, **Why** and **Consequence**, covering the fixed 21,100 kg, the optimality gap's `F_full` and `F_tight` rules, and why its samples are Peninsular.
-  - [ ] `grep -n "20,000\|20 t\|3 t\|Swept\|swept" docs/PROBLEM.md docs/DOMAIN-RESEARCH.md docs/EXPERIMENT.md` finds no `F` value or sweep for an experiment (the trial result and unrelated values such as weights excepted).
-  - [ ] Full suite passes: `python -m pytest`.
+  - [x] `docs/EXPERIMENT.md` lists exactly 4 experiments, numbered 1–4, and no "Fuel sweep" row. `grep -n "Fuel sweep" docs/EXPERIMENT.md` finds no table row.
+  - [x] `docs/DECISIONS.md` has a "No fuel sweep" entry with **Change**, **Why** and **Consequence**, covering the fixed 21,100 kg, the optimality gap's `F_full` and `F_tight` rules, and why its samples are Peninsular.
+  - [x] `grep -n "20,000\|20 t\|3 t\|Swept\|swept" docs/PROBLEM.md docs/DOMAIN-RESEARCH.md docs/EXPERIMENT.md` finds no `F` value or sweep for an experiment (the trial result and unrelated values such as weights excepted).
+  - [x] Full suite passes: `python -m pytest`.
 - **Doc deltas:** the files above (this subtask is the doc change).
+  - Decisions made during S2:
+    - `docs/DECISIONS.md` entry "Three rural and three non-rural bases": its Consequence now points to experiment 3 (bases), not experiment 4, to match the renumbering. Recorded in that doc.
+    - `docs/PROBLEM.md` Parameters intro: "experiments sweep some of them" became "experiments vary some of them", since no parameter is swept. Recorded in that doc.
+    - `docs/TODO.md` left unchanged: its only experiment number is experiment 1 (heap vs scan), which keeps its number. No doc needed.
+    - The optimality gap's `F_full`/`F_tight` values (about 5,640 and 4,900 kg) appear in `docs/DECISIONS.md` only as the planning measurement behind the Peninsular reason; S6 records the values its run finds in `docs/EXPERIMENT.md`. Recorded in `docs/DECISIONS.md`.
 
 ### S3 Experiment 1: heap vs scan
 
