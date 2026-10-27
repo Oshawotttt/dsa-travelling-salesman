@@ -177,8 +177,8 @@ Every comparison uses the default fuel cap `F = 21,100 kg` (the full internal ta
   - nearest neighbour, Approach A, and Approach B (seeded from nearest neighbour);
   - an extra row, **B on A's route**, labelled as a combined result and kept off the main A-vs-B chart. It shows how much local search still adds on top of a good route.
 - **Optimality gap:** exact DP (below) on 10 random 12-town samples of Peninsular towns, from the Perak base, at two lower fixed fuel caps, each the same for all 10 samples and each an assumption (a partial fuel load for a short-range sortie):
-  - `F_full`: the smallest multiple of 10 kg at which the DP route visits all 12 towns in at least 8 of the 10 samples;
-  - `F_tight`: the smallest multiple of 10 kg at which the DP routes visit on average at least 80% of the 12 towns.
+  - `F_full`: the smallest multiple of 10 kg in `[R, 21,100]` at which the DP route visits all 12 towns in at least 8 of the 10 samples;
+  - `F_tight`: the smallest multiple of 10 kg in `[R, 21,100]` at which the DP routes visit on average at least 80% of the 12 towns.
 
   Report the average and worst gap per algorithm and per `F`: heuristic population ÷ optimal population.
 - **Complexity analysis** of each approach, including the O(1) move evaluation with prefix sums.

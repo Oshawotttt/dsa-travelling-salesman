@@ -82,7 +82,7 @@ def run_experiment(towns: Sequence[Town], out_dir: Path, seeds: Sequence[int] = 
 
 def plot(out_dir: Path) -> None:
     """One panel per F: the gap (heuristic population / DP population) per algorithm, one dot per
-    sample, with the average marked."""
+    sample, with the average marked and the average and worst gap written under each algorithm."""
     out_dir = Path(out_dir)
     runs = read_runs(out_dir / "runs.csv")
     Fs = sorted({r["F"] for r in runs}, reverse=True)
@@ -96,13 +96,17 @@ def plot(out_dir: Path) -> None:
                     if r["algorithm"] == algorithm and optimum[r["sample"]] > 0]
             ax.scatter([x] * len(gaps), gaps, alpha=0.6, color="tab:blue",
                        label="One sample" if x == 0 else None)
-            ax.scatter([x], [sum(gaps) / len(gaps)], marker="_", s=600, color="tab:red", linewidths=2,
+            average = sum(gaps) / len(gaps)
+            ax.scatter([x], [average], marker="_", s=600, color="tab:red", linewidths=2,
                        label="Average" if x == 0 else None)
+            ax.text(x, 0.02, f"avg {average:.3f}" + chr(10) + f"worst {min(gaps):.3f}", ha="center",
+                    va="bottom", fontsize=9)
         ax.set_xticks(range(len(HEURISTICS)), [LABELS[a] for a in HEURISTICS])
         ax.set_ylim(0, 1.05)
+        ax.set_xlim(-0.6, len(HEURISTICS) - 0.4)
         ax.set_xlabel("Algorithm")
         ax.set_title(f"{name} = {F:,.0f} kg")
-        ax.legend(loc="lower right")
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=2)
     axes[0][0].set_ylabel("Gap: population ÷ optimal population")
     n_samples = len({r["sample"] for r in runs})
     fig.suptitle(f"Experiment 4: optimality gap ({n_samples} samples of {runs[0]['n_towns']} towns, "

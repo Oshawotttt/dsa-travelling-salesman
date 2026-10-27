@@ -69,6 +69,11 @@ def test_output_headers(tmp_path):
     assert header(tmp_path / "routes.csv") == ROUTES_HEADER
 
 
+def test_run_needs_a_repeat():
+    with pytest.raises(ValueError):
+        run("e0_test", 0, small_instance(), "origin", "nn", repeats=0)
+
+
 def rows(path):
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))

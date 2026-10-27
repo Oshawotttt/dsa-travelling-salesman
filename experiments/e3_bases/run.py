@@ -13,14 +13,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from airdrop.model import BASES, Instance, Params, Town, load_towns
+from airdrop.model import BASES, RURAL_BASES, Instance, Params, Town, load_towns
 from experiments.common import read_runs, run, write_outputs
 
 EXPERIMENT = "e3_bases"
 # region -> (rural base, non-rural base), docs/DECISIONS.md 2026-10-27
 REGIONS = {"Peninsula": ("perak", "klia"), "Sarawak": ("sarawak", "kuching"),
            "Sabah": ("sabah", "kota_kinabalu")}
-MAIN = ("nn", "a_heap", "b")
+MAIN_CHART = ("nn", "a_heap", "b")
 LABELS = {"nn": "Nearest neighbour", "a_heap": "A", "b": "B", "b_on_a": "B on A"}
 
 
@@ -30,7 +30,7 @@ def run_experiment(towns: Sequence[Town], out_dir: Path, bases: Sequence[str] = 
     for base in bases:
         inst = Instance(BASES[base], towns, Params())
         a_route = None
-        for algorithm in (*MAIN, "b_on_a"):
+        for algorithm in (*MAIN_CHART, "b_on_a"):
             r, s, result = run(EXPERIMENT, len(runs), inst, base, algorithm, a_route=a_route)
             if algorithm == "a_heap":
                 a_route = result.route
@@ -40,7 +40,7 @@ def run_experiment(towns: Sequence[Town], out_dir: Path, bases: Sequence[str] = 
 
 
 def _base_label(base: str) -> str:
-    return f"{base}\n({'rural' if any(base == rural for rural, _ in REGIONS.values()) else 'non-rural'})"
+    return f"{base}\n({'rural' if base in RURAL_BASES else 'non-rural'})"
 
 
 def plot(out_dir: Path) -> None:
@@ -52,8 +52,8 @@ def plot(out_dir: Path) -> None:
     order = [base for pair in REGIONS.values() for base in pair]
     x = range(len(order))
     width = 0.27
-    fig, (ax, ax_ba) = plt.subplots(1, 2, figsize=(14, 5), gridspec_kw={"width_ratios": [2, 1]})
-    for i, algorithm in enumerate(MAIN):
+    fig, (ax, ax_b_on_a) = plt.subplots(1, 2, figsize=(14, 5), gridspec_kw={"width_ratios": [2, 1]})
+    for i, algorithm in enumerate(MAIN_CHART):
         ax.bar([p + (i - 1) * width for p in x], [population[b, algorithm] for b in order], width,
                label=LABELS[algorithm])
     for i in range(1, len(REGIONS)):
@@ -63,12 +63,13 @@ def plot(out_dir: Path) -> None:
     ax.set_xticks(list(x), [_base_label(b) for b in order])
     ax.set_ylabel("Population reached (millions)")
     ax.set_title("NN, A and B from each base", pad=22)
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=len(MAIN))
-    ax_ba.bar(list(x), [population[b, "b_on_a"] for b in order], 0.6, color="tab:purple", label=LABELS["b_on_a"])
-    ax_ba.set_xticks(list(x), [_base_label(b) for b in order], fontsize=8)
-    ax_ba.set_ylabel("Population reached (millions)")
-    ax_ba.set_title("B on A (local search from A's route)", pad=22)
-    ax_ba.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16))
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=len(MAIN_CHART))
+    ax_b_on_a.bar(list(x), [population[b, "b_on_a"] for b in order], 0.6, color="tab:purple",
+                  label=LABELS["b_on_a"])
+    ax_b_on_a.set_xticks(list(x), [_base_label(b) for b in order], fontsize=8)
+    ax_b_on_a.set_ylabel("Population reached (millions)")
+    ax_b_on_a.set_title("B on A (local search from A's route)", pad=22)
+    ax_b_on_a.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16))
     fig.suptitle(f"Experiment 3: bases (F = {runs[0]['F']:,.0f} kg, {runs[0]['n_towns']} towns)")
     fig.tight_layout()
     fig.savefig(out_dir / "plot.png", dpi=150)

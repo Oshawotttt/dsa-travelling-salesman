@@ -64,6 +64,8 @@ def run(experiment: str, run_id: int, inst: Instance, base: str, algorithm: str,
         a_route: Sequence[int] | None = None) -> tuple[Run, list[Stop], SolveResult]:
     """Solve, keeping the best wall-clock time of `repeats` solver calls (trace not timed), and trace
     the route."""
+    if repeats < 1:
+        raise ValueError(f"repeats must be at least 1, got {repeats}")
     best = None
     for _ in range(repeats):
         start = time.perf_counter()

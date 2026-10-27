@@ -124,6 +124,7 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
     - The CSV columns are derived from the `Run` and `Stop` dataclass fields (`routes.csv` is the 4 key columns then every `Stop` field), so the files cannot drift from the dataclasses. Doc: `docs/CONTRACTS.md`.
     - `routes.csv` rows follow the order of `runs`, then `step`. Doc: `docs/CONTRACTS.md`.
     - With `repeats > 1`, `run` returns the last call's `SolveResult` (the solvers are deterministic) and `time_s` is the minimum. Doc: `docs/CONTRACTS.md` (`time_s`).
+    - Code review: `run` raises `ValueError` when `repeats < 1` (it used to fail with `UnboundLocalError`). Doc: `docs/CONTRACTS.md` (Experiment output).
 
 ### S2 Fixed fuel cap in the experiment plan (docs only)
 
@@ -249,6 +250,7 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
     - The binary search assumes its rule is false below the answer and true above it, searches multiples of 10 from `ceil(R / 10)` to `Params().F`, and raises `ValueError` when the rule fails at 21,100 kg. Doc: `docs/EXPERIMENT.md` (experiment 4).
     - Runs go `F_full` first, then `F_tight`; for each sample `dp`, `nn`, `a_heap`, `b`, `b_on_a`, with `b_on_a` seeded by that sample's `a_heap` route at the same `F`. Every run is 1 repeat. Doc: `docs/EXPERIMENT.md` (experiment 4).
     - The plot names the larger `F` "F_full" and the smaller "F_tight", since `runs.csv` holds only the values. `transient`.
+    - Code review: the plot writes "avg" and "worst" gap under each algorithm in each panel, so the report of average and worst per algorithm per `F` comes from `runs.csv` alone; legends sit below the axes. Doc: `docs/EXPERIMENT.md` (experiment 4 results).
     - The run found `F_full = 5,640 kg` (DP visits 12 towns in 8 samples, 11 in 2; coverage 98.3%) and `F_tight = 4,890 kg` (DP visits 7–11 towns, 96 of 120; coverage exactly 80.0%). The gaps, to 3 decimals, are those of the planning table above. The planning table's 4,900 kg came from a float comparison: `0.8 * 12` is `9.600000000000001`, so a mean of exactly 9.6 towns failed the rule. `coverage_F` compares the town totals with a `1e-9` tolerance instead. Doc: `docs/EXPERIMENT.md` (experiment 4 results); the tolerance is a code comment in `coverage_F`.
 
 ## 6. Human checks
