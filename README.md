@@ -10,11 +10,12 @@ The goal is to reach as many people as possible.
 
 ```
 airdrop/             Python package
-  model.py           towns, the six bases (3 rural, 3 non-rural), aircraft parameters, distances, route evaluator
+  model.py           towns, the six bases (3 rural, 3 non-rural), aircraft parameters, distances, route evaluator, per-stop route trace
   prefix.py          RouteState: prefix sums giving O(1) insertion, removal and 2-opt fuel costs
   approach_a.py      Approach A: greedy insertion, lazy max-heap or full re-scan selector
   baseline.py        nearest neighbour with a fuel cutoff (Approach B's starting route)
   approach_b.py      Approach B: best-improvement local search (2-opt, add, swap, replace 1 with 2)
+  exact_dp.py        exact backward subset DP for small instances (up to 15 towns)
 tests/               pytest suite, one file per module
 data/                town data, not in git (see Data below)
 docs/
@@ -29,8 +30,8 @@ requirements.txt     dependencies (numpy, pytest)
 pyproject.toml       pytest configuration
 ```
 
-Implemented: nearest neighbour, Approach A (heap and re-scan) and Approach B.
-Not implemented: the exact DP, and the experiment scripts and plots.
+Implemented: nearest neighbour, Approach A (heap and re-scan), Approach B and the exact DP.
+Not implemented: the experiment scripts and plots.
 Wind, climb, descent and airspace are not modelled.
 
 ## Setup
@@ -60,10 +61,11 @@ python -m pytest tests/test_model.py   # one file
 Run from the repo root, so that `airdrop` and `data/` are found:
 
 ```python
-from airdrop import BASES, Instance, Params, control_params, load_towns
+from airdrop import BASES, Instance, Params, control_params, load_towns, trace
 from airdrop.approach_a import greedy_insertion
 from airdrop.approach_b import local_search
 from airdrop.baseline import nearest_neighbour
+from airdrop.exact_dp import exact_dp
 
 towns = load_towns("data/cities_clean.csv", min_population=100_000)  # 86 towns
 inst = Instance(BASES["perak"], towns, Params())                     # C-130H defaults
@@ -74,6 +76,7 @@ audit = greedy_insertion(inst, "heap", audit=True)
 nn = nearest_neighbour(inst)                # baseline, and B's default seed
 b = local_search(inst)                      # Approach B from the nearest-neighbour route
 b_on_a = local_search(inst, initial=a.route)  # B on A's route (combined result)
+stops = trace(inst, a.route)                # per-stop record: position, fuel, cargo, weight, population reached
 
 for name, r in [("A heap", a), ("A scan", scan), ("NN", nn), ("B", b), ("B on A", b_on_a)]:
     print(f"{name:7} towns={len(r.route):3} population={r.eval.population:>10,} "
@@ -82,6 +85,9 @@ print("heap picks that differ from the re-scan:", audit.stats["mismatches"])
 
 control = Instance(BASES["perak"], towns, control_params(Params()))  # weight effect off
 print("A under the control:", greedy_insertion(control).eval.population)
+
+small = Instance(BASES["perak"], towns[:12], Params())
+best = exact_dp(small)                      # optimal route; raises ValueError above 15 towns
 ```
 
 Every solver returns a `SolveResult` with `route`, `eval` (a `RouteEval`) and `stats` (counters for the run).

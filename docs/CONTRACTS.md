@@ -126,6 +126,49 @@ def local_search(inst: Instance, initial: Sequence[int] | None = None,
 - `greedy_insertion` raises `ValueError` for an unknown `selector`.
 - `local_search` starts from `nearest_neighbour(inst).route` when `initial` is `None`. An infeasible `initial` raises `ValueError`. `L` is the candidate count per removed town for replace 1 with 2.
 
+## Exact solver
+
+```python
+# airdrop/exact_dp.py
+def exact_dp(inst: Instance, max_n: int = 15) -> SolveResult
+```
+
+- Returns the optimal route: largest population; ties go to the least fuel needed; remaining ties go to the smallest route as a tuple. Fuels within `1e-9` relative count as tied.
+- `route` and `eval` as for every solver; `eval == evaluate(inst, route)`.
+- `stats`: `states` (table entries kept), `transitions` (every `before` call that computes a candidate `need` entry, including the landing leg of `|U| = 1`; takeoff legs are not counted).
+- Raises `ValueError` when `inst.n > max_n`.
+- When no town fits, `route == []`.
+
+## Route trace
+
+```python
+# airdrop/model.py
+@dataclass(frozen=True)
+class Stop:
+    step: int                # 0 = takeoff at base, 1..k = drops in order, k + 1 = landing at base
+    index: int               # 0 for the base, town index otherwise
+    geonameid: int
+    name: str
+    lat: float
+    lon: float
+    population: int          # 0 at the base
+    leg_km: float            # length of the leg flown to reach this stop (0 at takeoff)
+    distance_km: float       # distance flown so far
+    leg_fuel_kg: float       # fuel burnt on that leg (0 at takeoff)
+    fuel_kg: float           # fuel on board on arrival (takeoff: F0_needed; landing: R)
+    cargo_kg: float          # cargo on board on arrival, before the drop
+    weight_kg: float         # E + cargo_kg + fuel_kg
+    population_reached: int  # total population of drops up to and including this stop
+
+def trace(inst: Instance, route: Sequence[int]) -> list[Stop]
+```
+
+- Works for a route from any solver; no solver is instrumented. `Stop` and `trace` are exported from `airdrop`.
+- Returns `len(route) + 2` stops. Raises `ValueError` when `evaluate(inst, route).fuel_needed` is `inf` or the route has a bad index. A route that is infeasible with finite fuel (duplicate, payload, fuel cap, takeoff weight) is still traced.
+- Fuel on board assumes the plane loads exactly `F0_needed`, so it lands with the fixed reserve `R` (1,700 kg), not a percentage reserve. The landing stop's `fuel_kg` is the forward-flown value (equal to `R` within rounding), so the `leg_fuel_kg` values add up to `F0_needed - fuel_kg` at landing.
+- Fuel on a leg of length `d` with cargo `W`: `fuel_after = f + (f + W)·expm1(-b·d) + a·expm1(-b·d)/b` (`f - a·d` at `b = 0`).
+- Takeoff and landing stops carry the base's `geonameid`, `name`, `lat`, `lon`.
+
 ## Route state
 
 ```python

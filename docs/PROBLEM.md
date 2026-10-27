@@ -183,14 +183,21 @@ Each approach solves the whole variant: all four broken assumptions at once.
 
 Exact DP finds the true best route on small inputs. It covers every route, like brute force, but only does work on a fraction of them.
 
-- Two partial routes that have visited the same towns, are at the same town and carry the same cargo have identical futures. The one with more fuel left is at least as good, so the other is discarded.
-- Table: `best[towns visited][current town]` = the most fuel left at that point.
-  1. Start: for each town `X`, `best[{X}][X]` = fuel left after flying base → `X`.
-  2. Extend: from each entry, try each unvisited town `Y`, and keep the larger fuel in `best[visited + Y][Y]`.
-  3. Finish: an entry is a valid route if the plane can still fly home with the reserve. Its score is the population of the visited towns.
-  4. Answer: the highest score.
-- Starting cargo depends on how many towns the route has. Because every drop is 200 kg, it depends only on the count `k`. So the table is run once for each `k = 1…n`, starting with `200 × k` kg of cargo and the matching fuel, and only routes with exactly `k` towns are accepted.
-- Cost: O(n × 2ⁿ × n²). For `n = 12` this is about 7M steps, which takes seconds in Python.
+The DP runs backward, from landing to takeoff (see [DECISIONS.md](DECISIONS.md)). Cargo on a leg is `w` for each drop still to come, so the set `U` of towns still to drop fixes the cargo on every leg and one pass covers every route length `k`.
+
+- State: `need[U][j]` = the least fuel on board on arrival at town `j` (before its drop, cargo `w·|U|`) that lets the plane drop at every town of `U` with `j` first, return to base and land with `R`.
+  - `|U| = 1`: `need[{j}][j] = before(R, d(j, 0), 0)`.
+  - Otherwise `need[U][j] = min over i in U∖{j} of before(need[U∖{j}][i], d(j, i), w·(|U|−1))`.
+  - `before(f, d, cargo) = f + (f + cargo)·expm1(b·d) + a·φ(b, d)`: the fuel needed before a leg of length `d` to have `f` after it (exact at `b = 0`).
+- Fuel needed for `U`: `F₀(U) = min over j in U of before(need[U][j], d(0, j), w·|U|)`.
+- Exactness: `before` is increasing in `f`, so needing less fuel later always means needing less fuel earlier. Keeping only the least `need` per state loses no route, and the least fuel needed is exact.
+- A set `U` is feasible when `evaluate(inst, route).feasible` for its rebuilt route. The backward `F₀(U)` and `evaluate`'s forward fuel differ by 1-2 ulp, so testing `F₀(U)` against `F` could return a route `evaluate` calls infeasible.
+- Answer: the feasible set with the largest population; ties go to the least fuel needed, then to the smallest route as a tuple.
+- Route rebuild: there is no `next` table. The route is rebuilt by walking `need` from the takeoff, trying at each step the towns whose fuel is within `TIE` of `need[U][j]`, smallest first, so routes come out in tuple order. The first one `evaluate` finds feasible is the set's route. A single stored chain could hold only one of a route and its reverse, and at `b = 0` with `F` exactly at the fuel, that one can be 1 ulp over `F` while the other fits.
+- Ties: fuels within `TIE = 1e-9` relative of the least count as equal (in `need`, at takeoff, and between sets of equal population), and the smallest town index wins, so the smallest route as a tuple. `need` and `F₀(U)` store the least fuel, so pruning uses exact values; among sets of the largest population, every set within `TIE` of the least fuel seen is kept and the smallest route wins at the end.
+- Pruning: a set with `w·|U| > C` is skipped whole, before any entry is computed. An entry is dropped when `need[U][j] > inst.fuel_limit(|U|)·(1 + TIE)`; the slack stops rounding from pruning a route `evaluate` finds feasible.
+- Cost: `O(n²·2ⁿ)` time and `O(n·2ⁿ)` memory. Caveat: when many orders of a set tie exactly (co-located towns) and `F` falls within `1e-9` relative above their fuel, every tied route fails `evaluate` and the walk tries all `k!` of them (`n = 9`: about 7 s).
+- `exact_dp` refuses instances with more than `max_n` towns (default 15).
 
 ## Bases
 
