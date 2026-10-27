@@ -227,3 +227,65 @@ def fuel_end(inst: Instance, route: Sequence[int], F0: float) -> float:
     # W0 e^(-bD) - sum(w e^(-b R_i)) = w * sum(e^(-bD) - e^(-b R_i))
     drops = p.w * sum(math.expm1(-b * D) - math.expm1(-b * (D - s)) for s in offsets)
     return F0 * math.exp(-b * D) + inst.a * math.expm1(-b * D) / b + drops
+
+
+@dataclass(frozen=True)
+class Stop:
+    step: int                # 0 = takeoff at base, 1..k = drops in order, k + 1 = landing at base
+    index: int               # 0 for the base, town index otherwise
+    geonameid: int
+    name: str
+    lat: float
+    lon: float
+    population: int          # 0 at the base
+    leg_km: float            # length of the leg flown to reach this stop (0 at takeoff)
+    distance_km: float       # distance flown so far
+    leg_fuel_kg: float       # fuel burnt on that leg (0 at takeoff)
+    fuel_kg: float           # fuel on board on arrival (takeoff: F0_needed; landing: R)
+    cargo_kg: float          # cargo on board on arrival, before the drop
+    weight_kg: float         # E + cargo_kg + fuel_kg
+    population_reached: int  # total population of drops up to and including this stop
+
+
+def _fuel_after(inst: Instance, f: float, d: float, cargo: float) -> float:
+    """Fuel left after a leg of length d flown with f on board and this cargo.
+
+    f + (f + cargo) (e^(-bd) - 1) + a (e^(-bd) - 1)/b, and f - a d at b = 0.
+    """
+    b = inst.b
+    if b == 0:
+        return f - inst.a * d
+    e = math.expm1(-b * d)
+    return f + (f + cargo) * e + inst.a * e / b
+
+
+def trace(inst: Instance, route: Sequence[int]) -> list[Stop]:
+    """Takeoff, each drop and landing of a route flown with exactly F0_needed loaded, so it
+    lands with R. Raises ValueError on a bad index or when F0_needed is infinite."""
+    ev = evaluate(inst, route)
+    if ev.reason == "bad_index":
+        raise ValueError(f"route has a bad index: {list(route)!r}")
+    if ev.fuel_needed == math.inf:
+        raise ValueError("route needs infinite fuel")
+    p = inst.params
+    route = [operator.index(i) for i in route]
+    base = inst.base
+    stops = [Stop(0, 0, base.geonameid, base.name, base.lat, base.lon, 0, 0.0, 0.0, 0.0,
+                  ev.fuel_needed, ev.cargo, p.E + ev.cargo + ev.fuel_needed, 0)]
+    prev, distance, fuel, cargo, reached = 0, 0.0, ev.fuel_needed, ev.cargo, 0
+    for step, t in enumerate([*route, 0], start=1):
+        leg = inst.dist(prev, t)
+        after = _fuel_after(inst, fuel, leg, cargo)
+        distance += leg
+        if t:
+            town = inst.towns[t - 1]
+            place = (town.geonameid, town.name, town.lat, town.lon, town.population)
+        else:
+            place = (base.geonameid, base.name, base.lat, base.lon, 0)
+        reached += place[4]
+        stops.append(Stop(step, t, *place, leg, distance, fuel - after, after, cargo,
+                          p.E + cargo + after, reached))
+        prev, fuel = t, after
+        if t:
+            cargo -= p.w
+    return stops

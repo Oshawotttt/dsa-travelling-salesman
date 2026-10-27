@@ -18,6 +18,7 @@ from airdrop.model import (
     fuel_end,
     haversine_km,
     load_towns,
+    trace,
 )
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "cities_clean.csv"
@@ -172,3 +173,104 @@ def test_data_smoke():
         base = BASES[key]
         nearest = min(haversine_km(base.lat, base.lon, t.lat, t.lon) for t in towns)
         assert nearest == pytest.approx(km, abs=0.5)
+
+
+def test_trace_empty():
+    inst = random_instance(4)
+    stops = trace(inst, [])
+    assert [(s.step, s.index, s.population) for s in stops] == [(0, 0, 0), (1, 0, 0)]
+    assert [s.fuel_kg for s in stops] == [inst.params.R, inst.params.R]
+    assert stops[0].geonameid == stops[1].geonameid == BASE0.geonameid
+
+
+def test_trace_errors():
+    inst = random_instance(5, n=3)
+    for route in ([0], [4], ["1"]):
+        with pytest.raises(ValueError):
+            trace(inst, route)
+    with pytest.raises(ValueError):
+        trace(Instance(BASE0, inst.towns, Params(b=2.0)), [1, 2])
+
+
+def feasible_routes(seed, params):
+    """A few random routes of 1..8 towns on an 8-town instance, with their instance."""
+    inst = random_instance(seed, params=params)
+    rng = random.Random(seed)
+    return inst, [rng.sample(range(1, inst.n + 1), rng.randint(1, inst.n)) for _ in range(4)]
+
+
+def test_trace_endpoints():
+    for params in (Params(), control_params(Params())):
+        inst, routes = feasible_routes(6, params)
+        for route in routes:
+            ev = evaluate(inst, route)
+            stops = trace(inst, route)
+            assert len(stops) == len(route) + 2
+            takeoff, landing = stops[0], stops[-1]
+            assert (takeoff.step, takeoff.index, landing.step, landing.index) == (0, 0, len(route) + 1, 0)
+            assert [s.index for s in stops[1:-1]] == route
+            assert [s.step for s in stops] == list(range(len(route) + 2))
+            assert takeoff.fuel_kg == ev.fuel_needed
+            assert takeoff.cargo_kg == inst.params.w * len(route)
+            assert (takeoff.leg_km, takeoff.distance_km, takeoff.leg_fuel_kg) == (0.0, 0.0, 0.0)
+            assert landing.fuel_kg == pytest.approx(inst.params.R, rel=1e-6)
+            assert landing.distance_km == pytest.approx(ev.distance, rel=1e-12)
+            assert landing.population_reached == ev.population
+            assert landing.cargo_kg == 0.0
+            for s in stops[1:-1]:
+                t = inst.towns[s.index - 1]
+                assert (s.geonameid, s.name, s.lat, s.lon, s.population) == (
+                    t.geonameid, t.name, t.lat, t.lon, t.population)
+
+
+def simulate_stops(inst, route, F0, step=0.01):
+    """Fuel on arrival at each drop and at landing, from the step-by-step flight above."""
+    p = inst.params
+    cargo, fuel, arrivals = p.w * len(route), F0, []
+    nodes = [0, *route, 0]
+    for leg, (i, j) in enumerate(zip(nodes, nodes[1:])):
+        remaining = inst.dist(i, j)
+        while remaining > 0:
+            dx = min(step, remaining)
+            fuel -= (inst.a + inst.b * (cargo + fuel)) * dx
+            remaining -= dx
+        arrivals.append(fuel)
+        if leg < len(route):
+            cargo -= p.w
+    return arrivals
+
+
+def test_trace_matches_fuel_end():
+    for params in (Params(), control_params(Params())):
+        inst, routes = feasible_routes(7, params)
+        for route in routes:
+            F0 = evaluate(inst, route).fuel_needed
+            stops = trace(inst, route)
+            assert stops[-1].fuel_kg == pytest.approx(fuel_end(inst, route, F0), rel=1e-9)
+            arrivals = simulate_stops(inst, route, F0)
+            for s, fuel in zip(stops[1:], arrivals):
+                assert s.fuel_kg == pytest.approx(fuel, abs=0.1)
+
+
+def test_trace_invariants():
+    p = Params()
+    for params in (p, control_params(p)):
+        inst, routes = feasible_routes(8, params)
+        for route in routes:
+            stops = trace(inst, route)
+            for prev, s in zip(stops, stops[1:]):
+                assert s.fuel_kg <= prev.fuel_kg
+                assert s.leg_fuel_kg == pytest.approx(prev.fuel_kg - s.fuel_kg, rel=1e-12, abs=1e-9)
+                assert s.leg_km == pytest.approx(inst.dist(prev.index, s.index), rel=1e-12)
+                assert s.distance_km == pytest.approx(prev.distance_km + s.leg_km, rel=1e-12)
+                assert s.population_reached == prev.population_reached + s.population
+                expected_cargo = prev.cargo_kg - (p.w if prev.step > 0 else 0.0)
+                assert s.cargo_kg == pytest.approx(expected_cargo, abs=1e-9)
+            for s in stops:
+                assert s.weight_kg == pytest.approx(p.E + s.cargo_kg + s.fuel_kg, rel=1e-12)
+
+
+def test_trace_exported():
+    import airdrop
+    assert airdrop.trace is trace
+    assert "Stop" in airdrop.__all__ and "trace" in airdrop.__all__

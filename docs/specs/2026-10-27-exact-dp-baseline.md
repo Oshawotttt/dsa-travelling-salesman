@@ -126,15 +126,20 @@ def trace(inst: Instance, route: Sequence[int]) -> list[Stop]
   - Decision (user): one model-level `trace(inst, route)` for every algorithm; no new algorithm-specific instrumentation; no solver changes. Doc delta: `docs/CONTRACTS.md`.
   - Decision (user): fuel on board assumes the plane loads exactly `F₀_needed`, so it lands with exactly the fixed reserve `R` (1,700 kg); no percentage reserve. Doc delta: `docs/CONTRACTS.md`.
 - **Acceptance criteria:**
-  - [ ] Takeoff stop has `fuel_kg == evaluate(...).fuel_needed`, `cargo_kg == w·k`; landing stop has `fuel_kg ≈ R` (`1e-6` relative), `distance_km ≈ evaluate(...).distance`, `population_reached == evaluate(...).population`. `tests/test_model.py::test_trace_endpoints`
-  - [ ] Landing fuel equals `fuel_end(inst, route, F0_needed)`, and each stop's `fuel_kg` equals `fuel_end`-style forward simulation of the prefix, on random routes with default `Params` and `control_params`. `tests/test_model.py::test_trace_matches_fuel_end`
-  - [ ] Cargo falls by `w` after each drop; `fuel_kg` never rises; `weight_kg == E + cargo_kg + fuel_kg`; `leg_fuel_kg` = previous `fuel_kg` − this `fuel_kg`. `tests/test_model.py::test_trace_invariants`
-  - [ ] Empty route gives 2 stops (takeoff, landing at base, `fuel_kg == R`). `tests/test_model.py::test_trace_empty`
-  - [ ] Bad index or `fuel_needed == inf` raises `ValueError`. `tests/test_model.py::test_trace_errors`
-  - [ ] Full suite passes: `python -m pytest`.
+  - [x] Takeoff stop has `fuel_kg == evaluate(...).fuel_needed`, `cargo_kg == w·k`; landing stop has `fuel_kg ≈ R` (`1e-6` relative), `distance_km ≈ evaluate(...).distance`, `population_reached == evaluate(...).population`. `tests/test_model.py::test_trace_endpoints`
+  - [x] Landing fuel equals `fuel_end(inst, route, F0_needed)`, and each stop's `fuel_kg` equals `fuel_end`-style forward simulation of the prefix, on random routes with default `Params` and `control_params`. `tests/test_model.py::test_trace_matches_fuel_end`
+  - [x] Cargo falls by `w` after each drop; `fuel_kg` never rises; `weight_kg == E + cargo_kg + fuel_kg`; `leg_fuel_kg` = previous `fuel_kg` − this `fuel_kg`. `tests/test_model.py::test_trace_invariants`
+  - [x] Empty route gives 2 stops (takeoff, landing at base, `fuel_kg == R`). `tests/test_model.py::test_trace_empty`
+  - [x] Bad index or `fuel_needed == inf` raises `ValueError`. `tests/test_model.py::test_trace_errors`
+  - [x] Full suite passes: `python -m pytest`.
 - **Doc deltas:**
   - `docs/CONTRACTS.md`: `Stop` and `trace` section (section 4 of this spec), including that fuel assumes `F₀_needed` loaded.
   - `README.md`: one usage line for `trace(inst, route)`.
+  - Decisions made during implementation:
+    - `trace` raises only on a bad index or infinite fuel needed, as the interface says; a route that is infeasible with finite fuel (duplicate, payload, fuel cap, takeoff weight) is still traced. Doc: `docs/CONTRACTS.md`.
+    - The landing stop's `fuel_kg` is the forward-flown value (equal to `R` within rounding), not set to `R`, so the `leg_fuel_kg` values add up to `F₀_needed − fuel_kg` at landing. Doc: `docs/CONTRACTS.md`.
+    - Takeoff and landing stops carry the base's `geonameid`, `name`, `lat`, `lon`. Doc: `docs/CONTRACTS.md`.
+    - Added `tests/test_model.py::test_trace_exported` to check `Stop` and `trace` are exported from `airdrop`. Needs no doc.
 
 ## 6. Human checks
 

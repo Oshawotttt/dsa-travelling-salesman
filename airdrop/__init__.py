@@ -8,15 +8,17 @@ from airdrop.model import (
     Instance,
     Params,
     RouteEval,
+    Stop,
     Town,
     control_params,
     evaluate,
     fuel_end,
     haversine_km,
     load_towns,
+    trace,
 )
 
 __all__ = [
-    "BASES", "M_REF", "RURAL_BASES", "URBAN_BASES", "Base", "Instance", "Params", "RouteEval", "Town",
-    "control_params", "evaluate", "fuel_end", "haversine_km", "load_towns",
+    "BASES", "M_REF", "RURAL_BASES", "URBAN_BASES", "Base", "Instance", "Params", "RouteEval", "Stop", "Town",
+    "control_params", "evaluate", "fuel_end", "haversine_km", "load_towns", "trace",
 ]
