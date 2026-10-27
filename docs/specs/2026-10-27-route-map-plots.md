@@ -130,16 +130,21 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
   - Each visited town has a tooltip with route label, step number, name, population, fuel on arrival (kg) and cargo on arrival (kg), taken from `trace`. No permanent town labels (user: "okay to all"). Doc delta (CONTRACTS.md).
   - A legend box (fixed, top right) lists each route label with its colour swatch and the title if given, on `background` colour with `text` colour text; folium's `LayerControl` alone shows no colours (user: "okay to all"). Doc delta (CONTRACTS.md).
 - **Acceptance criteria:**
-  - [ ] `plot_routes_html(inst, {"A": route}, tmp_path / "out" / "route.html")` creates the file and parent dir and returns its path (test, no network: folium only writes HTML).
-  - [ ] The HTML contains each route label, the base name and every visited town's name (test).
-  - [ ] The HTML contains each visited town's `lat` and `lon` to 4 decimals (test).
-  - [ ] The HTML contains `positron` (tile layer), each layer's hex colour, and `THEME["background"]` and `THEME["text"]` (test).
-  - [ ] `theme={"text": "#000000"}` puts `#000000` in the HTML (test).
-  - [ ] Empty route and two routes sharing towns render without error (test).
-  - [ ] `python -m pytest` passes.
+  - [x] `plot_routes_html(inst, {"A": route}, tmp_path / "out" / "route.html")` creates the file and parent dir and returns its path (test, no network: folium only writes HTML).
+  - [x] The HTML contains each route label, the base name and every visited town's name (test).
+  - [x] The HTML contains each visited town's `lat` and `lon` to 4 decimals (test).
+  - [x] The HTML contains `positron` (tile layer), each layer's hex colour, and `THEME["background"]` and `THEME["text"]` (test).
+  - [x] `theme={"text": "#000000"}` puts `#000000` in the HTML (test).
+  - [x] Empty route and two routes sharing towns render without error (test).
+  - [x] `python -m pytest` passes.
 - **Doc deltas:**
   - `docs/CONTRACTS.md` "Map plots": `plot_routes_html` signature and behaviour.
   - `README.md` "Plotting routes": HTML example; caveat that the HTML needs internet every time it is opened; it can be embedded in slides with an `<iframe>`.
+  - Decision made: each visited town's tooltip also shows its `lat, lon` to 4 decimals. Why: the acceptance criterion asks for 4-decimal coordinates in the HTML, and folium writes floats in shortest form (`4.6`), so only formatted text guarantees them; it also helps the human location check. `docs/CONTRACTS.md` (Map plots, tooltip contents).
+  - Decision made: the `LayerControl` sits top left, expanded, and lists only the route layers; town and base markers are added to the map directly, not toggleable. Why: the legend takes the top right, and a towns toggle is not in the spec. `docs/CONTRACTS.md` (Map plots).
+  - Decision made: the map opens centred on the base at zoom 7. Why: the spec names no start view; zoom 7 shows the peninsula or one Borneo state. `docs/CONTRACTS.md` (Map plots).
+  - Decision made: labels, names and the title are HTML-escaped before going into tooltips, layer names and the legend. Why: town names contain apostrophes and route labels are caller text. Needs no doc: no behaviour a caller sees changes.
+  - Decision made: kept the spec's `tiles="CartoDB positron"` although xyzservices 2026.9.1 makes folium warn `UserWarning: CartoDB tiles now require an API key`. Why: the tile URL folium writes has no key and `https://a.basemaps.cartocdn.com/light_all/5/25/15.png` returned 200 `image/png` on 2026-10-27; tile access may stop working later. `README.md` (Plotting routes, tile caveat).
   - `docs/TODO.md`: tick "Map plot of A's and B's routes, to check they look sensible" only after the human checks pass (left to the user). `transient`.
 
 ## 6. Human checks
