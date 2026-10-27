@@ -1,0 +1,9 @@
+experiment,run_id,algorithm,base,n_towns,sample,F,population,towns_visited,distance_km,fuel_needed_kg,feasible,time_s,stats
+e1_heap_vs_scan,0,a_heap,perak,86,,21100.0,26230974,81,5630.7650594598435,20374.617997055335,True,0.00806300004478544,"{""score_evals"": 172, ""insertions"": 81, ""heap_pops"": 86, ""heap_pushes"": 86, ""mismatches"": 72}"
+e1_heap_vs_scan,1,a_scan,perak,86,,21100.0,25941902,82,4683.586943902035,18172.85289304374,True,0.192416200065054,"{""score_evals"": 3725, ""insertions"": 82}"
+e1_heap_vs_scan,2,a_heap,perak,148,,21100.0,26479733,98,3844.1876421366073,14269.890227706199,True,0.020249500055797398,"{""score_evals"": 296, ""insertions"": 98, ""heap_pops"": 148, ""heap_pushes"": 148, ""mismatches"": 91}"
+e1_heap_vs_scan,3,a_scan,perak,148,,21100.0,23794385,98,1769.2809142383517,7622.89100922802,True,0.49268090003170073,"{""score_evals"": 9751, ""insertions"": 98}"
+e1_heap_vs_scan,4,a_heap,perak,358,,21100.0,25380960,98,2497.3693616804517,10002.811435262858,True,0.03772580006625503,"{""score_evals"": 716, ""insertions"": 98, ""heap_pops"": 358, ""heap_pushes"": 358, ""mismatches"": 93}"
+e1_heap_vs_scan,5,a_scan,perak,358,,21100.0,15843998,98,839.0276011531618,4366.551532133667,True,1.791470400057733,"{""score_evals"": 30591, ""insertions"": 98}"
+e1_heap_vs_scan,6,a_heap,perak,745,,21100.0,25380960,98,2497.3693616804517,10002.811435262858,True,0.08748859993647784,"{""score_evals"": 1490, ""insertions"": 98, ""heap_pops"": 745, ""heap_pushes"": 745, ""mismatches"": 93}"
+e1_heap_vs_scan,7,a_scan,perak,745,,21100.0,15714929,98,819.0705878917578,4291.6259065734475,True,4.246885799919255,"{""score_evals"": 68904, ""insertions"": 98}"

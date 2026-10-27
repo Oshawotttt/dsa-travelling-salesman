@@ -26,7 +26,7 @@ We can then set it against the costs that have no number in our model, for examp
 If the existing airport reaches almost as many people, a new airbase is hard to justify.
 If the rural site reaches many more, the non-numerical costs may be worth paying.
 
-**Consequence:** experiment 4 in [EXPERIMENT.md](EXPERIMENT.md) compares the rural and non-rural base within each region.
+**Consequence:** experiment 3 (bases) in [EXPERIMENT.md](EXPERIMENT.md) compares the rural and non-rural base within each region.
 
 ## 2026-10-27: Exact DP runs backward, from landing to takeoff
 
@@ -56,3 +56,24 @@ If the rural site reaches many more, the non-numerical costs may be worth paying
 Burn per km is `c × total mass`, and total mass ranges from 33,600 kg (empty) to 70,300 kg (MTOW), so a full plane burns about twice as much per km as an empty one.
 
 **Consequence:** the slides justify the weight model with this calculation instead of a plot.
+
+## 2026-10-27: No fuel sweep
+
+**Change:** the fuel sweep experiment (population against `F` for NN, A and B, from 3,000 to 20,000 kg) was dropped from [EXPERIMENT.md](EXPERIMENT.md) and the evaluation plan in [PROBLEM.md](PROBLEM.md#evaluation-plan). No experiment sweeps `F`.
+
+- Experiments 1–3 (heap vs scan, run time, bases) use the default `Params`, `F = 21,100 kg`. Experiment 1 varies the number of towns, not `F`. The bases experiment moves from `F = 20,000 kg` to 21,100 kg.
+- B on A moves from the fuel sweep to the bases experiment, as its own row kept off the main chart.
+- The experiments are renumbered 1–4: heap vs scan, run time, bases, optimality gap.
+- The optimality gap uses two lower fixed fuel caps, each the same for all 10 samples and each stated as an assumption (a partial fuel load for a short-range sortie):
+  - `F_full`: the smallest multiple of 10 kg in `[R, 21,100]` at which the exact DP route visits all 12 towns in at least 8 of the 10 samples ("most cases").
+  - `F_tight`: the smallest multiple of 10 kg in `[R, 21,100]` at which the exact DP routes visit on average at least 80% of the 12 towns, 9.6 towns (the middle of 70–90%).
+  - Both are found by binary search over multiples of 10 kg. They replace the earlier rule "`F` set so about half the towns fit".
+- The optimality gap's 12-town samples are drawn from Peninsular towns only (`region == "Peninsular"`), from the Perak base.
+
+**Why:**
+
+- [DOMAIN-RESEARCH.md](DOMAIN-RESEARCH.md) justifies `F = 21,100 kg` as the C-130H internal tank, so a sweep is not needed to defend the value. The bases experiment already compares the algorithms on 6 instances.
+- The optimality gap needs a lower `F`: at 21,100 kg every 12-town sample fits whole, so NN, A and B all score exactly the optimum (checked on 10 samples from all towns and from Peninsular towns: every gap 1.000). Two values show the gap when almost every town fits and when about a fifth must be left out.
+- Peninsular samples, measured on seeds 0–9: drawn from all 745 towns, 18 of the 120 sampled towns are in East Malaysia, over 1,000 km from Perak. At the gap's fuel caps (about 4,900 and 5,640 kg, so at most about 3,940 kg above the reserve, under 1,000 km of flight at 4.2 kg/km) no route can reach them and fly back. Every algorithm and the DP skip them, so a sample has fewer than 12 real choices, and the count differs between samples. Peninsular samples keep all 12 towns reachable. The Perak base is on the Peninsula, and 642 of the 745 towns are Peninsular.
+
+**Consequence:** each experiment's plan in [EXPERIMENT.md](EXPERIMENT.md) states its fuel cap. Experiment 4 reports the `F_full` and `F_tight` values its run finds.
