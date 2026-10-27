@@ -11,7 +11,7 @@ from typing import Mapping, Sequence
 
 import folium
 
-from airdrop.model import Instance, Stop, trace
+from airdrop.model import Base, Instance, Stop, Town, trace
 
 THEME: dict[str, str] = {            # slide body: one slate family, light
     "background": "#F4F6F8",         # legend box
@@ -34,6 +34,24 @@ class RouteLayer:
     stops: tuple[Stop, ...]          # trace(inst, route): takeoff, drops, landing
 
 
+def _check_count(routes: Mapping[str, object]) -> None:
+    if not routes:
+        raise ValueError("at least 1 route per map, got 0")
+    if len(routes) > len(ROUTE_COLORS):
+        raise ValueError(f"at most {len(ROUTE_COLORS)} routes per map, got {len(routes)}")
+
+
+def _layers(stops: Mapping[str, tuple[Stop, ...]],
+            colors: Mapping[str, str] | None) -> list[RouteLayer]:
+    colors = colors or {}
+    chosen = {label: colors[label] if label in colors else ROUTE_COLORS.get(label)
+              for label in stops}
+    used = {c.upper() for c in chosen.values() if c is not None}
+    spare = [c for c in ROUTE_COLORS.values() if c.upper() not in used]
+    return [RouteLayer(label, spare.pop(0) if chosen[label] is None else chosen[label], s)
+            for label, s in stops.items()]
+
+
 def route_layers(inst: Instance, routes: Mapping[str, Sequence[int]],
                  colors: Mapping[str, str] | None = None) -> list[RouteLayer]:
     """One layer per labelled route, in the order of routes.
@@ -42,24 +60,22 @@ def route_layers(inst: Instance, routes: Mapping[str, Sequence[int]],
     already used on this map. Raises ValueError for no routes or more than 5, or naming the
     label of a route that trace rejects.
     """
-    if not routes:
-        raise ValueError("at least 1 route per map, got 0")
-    if len(routes) > len(ROUTE_COLORS):
-        raise ValueError(f"at most {len(ROUTE_COLORS)} routes per map, got {len(routes)}")
-    colors = colors or {}
-    chosen = {label: colors[label] if label in colors else ROUTE_COLORS.get(label)
-              for label in routes}
-    used = {c.upper() for c in chosen.values() if c is not None}
-    spare = [c for c in ROUTE_COLORS.values() if c.upper() not in used]
-    layers = []
+    _check_count(routes)
+    stops = {}
     for label, route in routes.items():
         try:
-            stops = tuple(trace(inst, route))
+            stops[label] = tuple(trace(inst, route))
         except ValueError as e:
             raise ValueError(f"route {label!r}: {e}") from e
-        color = spare.pop(0) if chosen[label] is None else chosen[label]
-        layers.append(RouteLayer(label, color, stops))
-    return layers
+    return _layers(stops, colors)
+
+
+def stop_layers(routes: Mapping[str, Sequence[Stop]],
+                colors: Mapping[str, str] | None = None) -> list[RouteLayer]:
+    """route_layers for routes already traced (e.g. read back from routes.csv): each value is
+    the route's stops, takeoff to landing. Same colours and count errors as route_layers."""
+    _check_count(routes)
+    return _layers({label: tuple(s) for label, s in routes.items()}, colors)
 
 
 def _html(text: str) -> str:
@@ -101,12 +117,25 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
     lat/lon polyline in its own toggleable layer, with its towns as larger circles in the route
     colour and a tooltip per drop; the base is the largest circle, in theme["text"]. A fixed
     legend box (top right) shows the title and each route's colour. Opening the file needs
-    internet for the CartoDB Positron tiles.
+    internet for the OpenStreetMap tiles.
     """
-    layers = route_layers(inst, routes, colors)
+    return _save_map(inst.base, inst.towns, route_layers(inst, routes, colors), path, title, theme)
+
+
+def plot_stops_html(base: Base, towns: Sequence[Town], routes: Mapping[str, Sequence[Stop]],
+                    path: str | Path, title: str | None = None,
+                    colors: Mapping[str, str] | None = None,
+                    theme: Mapping[str, str] | None = None) -> Path:
+    """plot_routes_html for routes already traced: `routes` maps each label to its stops and
+    `towns` are the small background circles. Returns the resolved path."""
+    return _save_map(base, towns, stop_layers(routes, colors), path, title, theme)
+
+
+def _save_map(base: Base, towns: Sequence[Town], layers: Sequence[RouteLayer], path: str | Path,
+              title: str | None, theme: Mapping[str, str] | None) -> Path:
     palette = {**THEME, **(theme or {})}
-    m = folium.Map(location=[inst.base.lat, inst.base.lon], zoom_start=7, tiles="CartoDB positron")
-    for town in inst.towns:
+    m = folium.Map(location=[base.lat, base.lon], zoom_start=7, tiles="OpenStreetMap")
+    for town in towns:
         _dot(m, town.lat, town.lon, radius=2, color=palette["towns"], weight=0, opacity=0.8)
     for layer in layers:
         group = folium.FeatureGroup(name=_html(layer.label))
@@ -117,9 +146,12 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
             _dot(group, stop.lat, stop.lon, radius=5, color=layer.color, weight=1, opacity=1.0,
                  tooltip=_tooltip(layer.label, stop))
         group.add_to(m)
-    base = inst.base
     _dot(m, base.lat, base.lon, radius=8, color=palette["text"], weight=2, opacity=1.0,
          tooltip=f"Base: {_html(base.name)}")
+    lats = [base.lat] + [s.lat for layer in layers for s in layer.stops]
+    lons = [base.lon] + [s.lon for layer in layers for s in layer.stops]
+    if len(set(zip(lats, lons))) > 1:
+        m.fit_bounds([[min(lats), min(lons)], [max(lats), max(lons)]], padding=(30, 30))
     folium.LayerControl(position="topleft", collapsed=False).add_to(m)
     m.get_root().html.add_child(folium.Element(_legend(layers, title, palette)))
     path = Path(path).resolve()

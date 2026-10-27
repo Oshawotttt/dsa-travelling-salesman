@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_8f14dcfc7ac4d7ddd19937b68c0cd894 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    <div style="position:fixed;top:10px;right:10px;z-index:9999;padding:8px 10px;background:#F4F6F8;color:#1F2A36;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,0.3);font-size:13px"><div><b>e4_optimality_gap: perak, 12 towns, sample 9, F 5,640 kg</b></div><div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:middle;background:#009988"></span>DP</div><div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:middle;background:#EE7733"></span>NN</div><div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:middle;background:#0077BB"></span>A</div><div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:middle;background:#EE3377"></span>B</div><div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:middle;background:#33BBEE"></span>B on A</div></div>
+    
+            <div class="folium-map" id="map_8f14dcfc7ac4d7ddd19937b68c0cd894" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_8f14dcfc7ac4d7ddd19937b68c0cd894 = L.map(
+                "map_8f14dcfc7ac4d7ddd19937b68c0cd894",
+                {
+                    center: [4.98333, 101.21667],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_611cf0b9dba634ae849ca728f2ebda7c = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_611cf0b9dba634ae849ca728f2ebda7c.addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_ef4490ffad54369b72fd67c9618c1446 = L.circleMarker(
+                [5.53333, 100.73333],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_420e6c39fa146d6a6c2648479f1884b8 = L.circleMarker(
+                [5.33096, 100.28296],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_557d96998983a2463631dc5bdf59ea3e = L.circleMarker(
+                [5.46948, 100.24449],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_561b98f531e11f27133b5032846b3bf9 = L.circleMarker(
+                [6.36257, 99.7832],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_09eceb765c00f772ba8a0aeeeee7cfd5 = L.circleMarker(
+                [6.11625, 102.24229],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_3f382f53f527b36a3331d87317847a90 = L.circleMarker(
+                [6.05, 102.35],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_b513e6e4a6e1f93ad3c0a24860d7df7e = L.circleMarker(
+                [5.37293, 103.02053],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_d9dd6278b7d626b0a1f2aa1a89ad1d37 = L.circleMarker(
+                [3.8682, 102.5862],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_6d81a2d655a3cdf443316d938682e2eb = L.circleMarker(
+                [2.1586, 102.3475],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_920865698b9d1cae66dda8f47bf56fd9 = L.circleMarker(
+                [3.04384, 101.58062],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_e3bca5cb08e5b0906a9851ff2b7ebf39 = L.circleMarker(
+                [3.12966, 101.68424],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_d3a0f1a6d46937a0301d96d13a2e3079 = L.circleMarker(
+                [3.16866, 101.65076],
+                {"bubblingMouseEvents": true, "color": "#A9B4C2", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#A9B4C2", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 2, "stroke": true, "weight": 0}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var feature_group_ad82a25417fc96b9e9585315384ff395 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_15c8e1781e9044297d4e8b750bf52e4a = L.polyline(
+                [[4.98333, 101.21667], [5.53333, 100.73333], [5.33096, 100.28296], [5.46948, 100.24449], [6.36257, 99.7832], [6.11625, 102.24229], [6.05, 102.35], [5.37293, 103.02053], [3.8682, 102.5862], [2.1586, 102.3475], [3.04384, 101.58062], [3.12966, 101.68424], [3.16866, 101.65076], [4.98333, 101.21667]],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#009988", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            var circle_marker_7d1e3693b87ca278bfa947392b487bc1 = L.circleMarker(
+                [5.53333, 100.73333],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_7d1e3693b87ca278bfa947392b487bc1.bindTooltip(
+                `<div>
+                     DP, step 1<br><b>Kampong Bakai</b><br>population 12,235<br>fuel on arrival 5,159 kg<br>cargo on arrival 2,400 kg<br>5.5333, 100.7333
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8538834c7c0f59c65a3eef2772d306c4 = L.circleMarker(
+                [5.33096, 100.28296],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_8538834c7c0f59c65a3eef2772d306c4.bindTooltip(
+                `<div>
+                     DP, step 2<br><b>Relau</b><br>population 18,755<br>fuel on arrival 5,003 kg<br>cargo on arrival 2,200 kg<br>5.3310, 100.2830
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d3e58fc4245dbc0957e055caa4845765 = L.circleMarker(
+                [5.46948, 100.24449],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_d3e58fc4245dbc0957e055caa4845765.bindTooltip(
+                `<div>
+                     DP, step 3<br><b>Kampung Batu Feringgi</b><br>population 4,000<br>fuel on arrival 4,957 kg<br>cargo on arrival 2,000 kg<br>5.4695, 100.2445
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f99df42461ee2bfe61f60a6ba0ba8143 = L.circleMarker(
+                [6.36257, 99.7832],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_f99df42461ee2bfe61f60a6ba0ba8143.bindTooltip(
+                `<div>
+                     DP, step 4<br><b>Kampung Bukit Hantu</b><br>population 1,000<br>fuel on arrival 4,643 kg<br>cargo on arrival 1,800 kg<br>6.3626, 99.7832
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_181038db7d2faeea6e46712e235775ca = L.circleMarker(
+                [6.11625, 102.24229],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_181038db7d2faeea6e46712e235775ca.bindTooltip(
+                `<div>
+                     DP, step 5<br><b>Kampung Wakaf Sku</b><br>population 1,125<br>fuel on arrival 3,888 kg<br>cargo on arrival 1,600 kg<br>6.1162, 102.2423
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8b5fedf7213fbd72146a5d7662d8320b = L.circleMarker(
+                [6.05, 102.35],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_8b5fedf7213fbd72146a5d7662d8320b.bindTooltip(
+                `<div>
+                     DP, step 6<br><b>Kampong Chap</b><br>population 2,780<br>fuel on arrival 3,850 kg<br>cargo on arrival 1,400 kg<br>6.0500, 102.3500
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_46c5a7f759d24962a112860ff04161cb = L.circleMarker(
+                [5.37293, 103.02053],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_46c5a7f759d24962a112860ff04161cb.bindTooltip(
+                `<div>
+                     DP, step 7<br><b>Kuala Nerus</b><br>population 93,485<br>fuel on arrival 3,565 kg<br>cargo on arrival 1,200 kg<br>5.3729, 103.0205
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2972f7aef5c18dc2903a1aece9d1e579 = L.circleMarker(
+                [3.8682, 102.5862],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_2972f7aef5c18dc2903a1aece9d1e579.bindTooltip(
+                `<div>
+                     DP, step 8<br><b>Kampung Perak</b><br>population 44,964<br>fuel on arrival 3,103 kg<br>cargo on arrival 1,000 kg<br>3.8682, 102.5862
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_00c6815739127fb26d379fea8240a518 = L.circleMarker(
+                [2.1586, 102.3475],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_00c6815739127fb26d379fea8240a518.bindTooltip(
+                `<div>
+                     DP, step 9<br><b>Kampung Umbai</b><br>population 8,989<br>fuel on arrival 2,603 kg<br>cargo on arrival 800 kg<br>2.1586, 102.3475
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d589cf31b95ef7a98e9f3614a622fdfb = L.circleMarker(
+                [3.04384, 101.58062],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_d589cf31b95ef7a98e9f3614a622fdfb.bindTooltip(
+                `<div>
+                     DP, step 10<br><b>Subang Jaya</b><br>population 708,296<br>fuel on arrival 2,269 kg<br>cargo on arrival 600 kg<br>3.0438, 101.5806
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3aa9d47ac98fdb49e0ac6ebb242bd044 = L.circleMarker(
+                [3.12966, 101.68424],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_3aa9d47ac98fdb49e0ac6ebb242bd044.bindTooltip(
+                `<div>
+                     DP, step 11<br><b>Brickfields</b><br>population 12,000<br>fuel on arrival 2,231 kg<br>cargo on arrival 400 kg<br>3.1297, 101.6842
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_34801d96d270720e0afce0ca3ec890af = L.circleMarker(
+                [3.16866, 101.65076],
+                {"bubblingMouseEvents": true, "color": "#009988", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#009988", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_ad82a25417fc96b9e9585315384ff395);
+        
+    
+            circle_marker_34801d96d270720e0afce0ca3ec890af.bindTooltip(
+                `<div>
+                     DP, step 12<br><b>Mont Kiara</b><br>population 30,643<br>fuel on arrival 2,216 kg<br>cargo on arrival 200 kg<br>3.1687, 101.6508
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_ad82a25417fc96b9e9585315384ff395.addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var feature_group_598700020db78a0c66081518778bdb70 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_36ec18e885cdea9780d4f56fa5fc9460 = L.polyline(
+                [[4.98333, 101.21667], [5.53333, 100.73333], [5.46948, 100.24449], [5.33096, 100.28296], [6.36257, 99.7832], [6.11625, 102.24229], [6.05, 102.35], [5.37293, 103.02053], [3.8682, 102.5862], [3.12966, 101.68424], [3.16866, 101.65076], [3.04384, 101.58062], [2.1586, 102.3475], [4.98333, 101.21667]],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#EE7733", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            var circle_marker_7057a2cc56faa894d1d7ef99bfc0df11 = L.circleMarker(
+                [5.53333, 100.73333],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_7057a2cc56faa894d1d7ef99bfc0df11.bindTooltip(
+                `<div>
+                     NN, step 1<br><b>Kampong Bakai</b><br>population 12,235<br>fuel on arrival 5,384 kg<br>cargo on arrival 2,400 kg<br>5.5333, 100.7333
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1e4bdb40a8c98a4cf2c303f82b7a6c3b = L.circleMarker(
+                [5.46948, 100.24449],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_1e4bdb40a8c98a4cf2c303f82b7a6c3b.bindTooltip(
+                `<div>
+                     NN, step 2<br><b>Kampung Batu Feringgi</b><br>population 4,000<br>fuel on arrival 5,227 kg<br>cargo on arrival 2,200 kg<br>5.4695, 100.2445
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1af71b32204119fa939ad9472d54b7b6 = L.circleMarker(
+                [5.33096, 100.28296],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_1af71b32204119fa939ad9472d54b7b6.bindTooltip(
+                `<div>
+                     NN, step 3<br><b>Relau</b><br>population 18,755<br>fuel on arrival 5,181 kg<br>cargo on arrival 2,000 kg<br>5.3310, 100.2830
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2500f1c501bf8a1c3354be73e5fd70a7 = L.circleMarker(
+                [6.36257, 99.7832],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_2500f1c501bf8a1c3354be73e5fd70a7.bindTooltip(
+                `<div>
+                     NN, step 4<br><b>Kampung Bukit Hantu</b><br>population 1,000<br>fuel on arrival 4,821 kg<br>cargo on arrival 1,800 kg<br>6.3626, 99.7832
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_151e75d924818e40394dea09b44456ee = L.circleMarker(
+                [6.11625, 102.24229],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_151e75d924818e40394dea09b44456ee.bindTooltip(
+                `<div>
+                     NN, step 5<br><b>Kampung Wakaf Sku</b><br>population 1,125<br>fuel on arrival 4,063 kg<br>cargo on arrival 1,600 kg<br>6.1162, 102.2423
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_04d3d38e79b39badd3b047e4ae829f7e = L.circleMarker(
+                [6.05, 102.35],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_04d3d38e79b39badd3b047e4ae829f7e.bindTooltip(
+                `<div>
+                     NN, step 6<br><b>Kampong Chap</b><br>population 2,780<br>fuel on arrival 4,025 kg<br>cargo on arrival 1,400 kg<br>6.0500, 102.3500
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8bfce50958ba53ed3db286944cc71987 = L.circleMarker(
+                [5.37293, 103.02053],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_8bfce50958ba53ed3db286944cc71987.bindTooltip(
+                `<div>
+                     NN, step 7<br><b>Kuala Nerus</b><br>population 93,485<br>fuel on arrival 3,739 kg<br>cargo on arrival 1,200 kg<br>5.3729, 103.0205
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b3f1579b44aaf1c16fe26964498332ff = L.circleMarker(
+                [3.8682, 102.5862],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_b3f1579b44aaf1c16fe26964498332ff.bindTooltip(
+                `<div>
+                     NN, step 8<br><b>Kampung Perak</b><br>population 44,964<br>fuel on arrival 3,274 kg<br>cargo on arrival 1,000 kg<br>3.8682, 102.5862
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c060d028e952a36b7c8bd0959f755a86 = L.circleMarker(
+                [3.12966, 101.68424],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_c060d028e952a36b7c8bd0959f755a86.bindTooltip(
+                `<div>
+                     NN, step 9<br><b>Brickfields</b><br>population 12,000<br>fuel on arrival 2,934 kg<br>cargo on arrival 800 kg<br>3.1297, 101.6842
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_87139b3381bf3c60253b088b475c84f5 = L.circleMarker(
+                [3.16866, 101.65076],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_87139b3381bf3c60253b088b475c84f5.bindTooltip(
+                `<div>
+                     NN, step 10<br><b>Mont Kiara</b><br>population 30,643<br>fuel on arrival 2,920 kg<br>cargo on arrival 600 kg<br>3.1687, 101.6508
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a3a1c0394e0aae0ad4cdcbf2f096ccd5 = L.circleMarker(
+                [3.04384, 101.58062],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_a3a1c0394e0aae0ad4cdcbf2f096ccd5.bindTooltip(
+                `<div>
+                     NN, step 11<br><b>Subang Jaya</b><br>population 708,296<br>fuel on arrival 2,878 kg<br>cargo on arrival 400 kg<br>3.0438, 101.5806
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_66ed1dfd250d7699cffc8454ae80ef56 = L.circleMarker(
+                [2.1586, 102.3475],
+                {"bubblingMouseEvents": true, "color": "#EE7733", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE7733", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_598700020db78a0c66081518778bdb70);
+        
+    
+            circle_marker_66ed1dfd250d7699cffc8454ae80ef56.bindTooltip(
+                `<div>
+                     NN, step 12<br><b>Kampung Umbai</b><br>population 8,989<br>fuel on arrival 2,546 kg<br>cargo on arrival 200 kg<br>2.1586, 102.3475
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_598700020db78a0c66081518778bdb70.addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var feature_group_691999cc3a2418b37ba2a1360a2184a6 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_aee59f5ebe8c5e9439ff5affff5b7344 = L.polyline(
+                [[4.98333, 101.21667], [6.11625, 102.24229], [6.05, 102.35], [5.37293, 103.02053], [3.8682, 102.5862], [2.1586, 102.3475], [3.16866, 101.65076], [3.12966, 101.68424], [3.04384, 101.58062], [5.33096, 100.28296], [5.46948, 100.24449], [6.36257, 99.7832], [5.53333, 100.73333], [4.98333, 101.21667]],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0077BB", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            var circle_marker_90f2e2adbbbbf2cfc1ef8c7d9b39ee00 = L.circleMarker(
+                [6.11625, 102.24229],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_90f2e2adbbbbf2cfc1ef8c7d9b39ee00.bindTooltip(
+                `<div>
+                     A, step 1<br><b>Kampung Wakaf Sku</b><br>population 1,125<br>fuel on arrival 5,119 kg<br>cargo on arrival 2,400 kg<br>6.1162, 102.2423
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9a4396a1497b507df2ec4e5d3aebb91c = L.circleMarker(
+                [6.05, 102.35],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_9a4396a1497b507df2ec4e5d3aebb91c.bindTooltip(
+                `<div>
+                     A, step 2<br><b>Kampong Chap</b><br>population 2,780<br>fuel on arrival 5,079 kg<br>cargo on arrival 2,200 kg<br>6.0500, 102.3500
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_645e982a8c2c6be4c29ed5384298ee04 = L.circleMarker(
+                [5.37293, 103.02053],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_645e982a8c2c6be4c29ed5384298ee04.bindTooltip(
+                `<div>
+                     A, step 3<br><b>Kuala Nerus</b><br>population 93,485<br>fuel on arrival 4,779 kg<br>cargo on arrival 2,000 kg<br>5.3729, 103.0205
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e48c24c5c8dbb9469659b15a7fa98124 = L.circleMarker(
+                [3.8682, 102.5862],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_e48c24c5c8dbb9469659b15a7fa98124.bindTooltip(
+                `<div>
+                     A, step 4<br><b>Kampung Perak</b><br>population 44,964<br>fuel on arrival 4,293 kg<br>cargo on arrival 1,800 kg<br>3.8682, 102.5862
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_286df6d8bcc6a2cfac5ffbb35b06f9e7 = L.circleMarker(
+                [2.1586, 102.3475],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_286df6d8bcc6a2cfac5ffbb35b06f9e7.bindTooltip(
+                `<div>
+                     A, step 5<br><b>Kampung Umbai</b><br>population 8,989<br>fuel on arrival 3,766 kg<br>cargo on arrival 1,600 kg<br>2.1586, 102.3475
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ec1cae46e324cff6b56f76f88ec248e7 = L.circleMarker(
+                [3.16866, 101.65076],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_ec1cae46e324cff6b56f76f88ec248e7.bindTooltip(
+                `<div>
+                     A, step 6<br><b>Mont Kiara</b><br>population 30,643<br>fuel on arrival 3,397 kg<br>cargo on arrival 1,400 kg<br>3.1687, 101.6508
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_625622a391f76f1e63af4a4ab15f3728 = L.circleMarker(
+                [3.12966, 101.68424],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_625622a391f76f1e63af4a4ab15f3728.bindTooltip(
+                `<div>
+                     A, step 7<br><b>Brickfields</b><br>population 12,000<br>fuel on arrival 3,382 kg<br>cargo on arrival 1,200 kg<br>3.1297, 101.6842
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_487bda444748e7263f54c2947f67fc3a = L.circleMarker(
+                [3.04384, 101.58062],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_487bda444748e7263f54c2947f67fc3a.bindTooltip(
+                `<div>
+                     A, step 8<br><b>Subang Jaya</b><br>population 708,296<br>fuel on arrival 3,342 kg<br>cargo on arrival 1,000 kg<br>3.0438, 101.5806
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8ab8a22187a72a7238a43ed4d77b23aa = L.circleMarker(
+                [5.33096, 100.28296],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_8ab8a22187a72a7238a43ed4d77b23aa.bindTooltip(
+                `<div>
+                     A, step 9<br><b>Relau</b><br>population 18,755<br>fuel on arrival 2,578 kg<br>cargo on arrival 800 kg<br>5.3310, 100.2830
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_91936ac99d307e695836b7cdde5c144e = L.circleMarker(
+                [5.46948, 100.24449],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_91936ac99d307e695836b7cdde5c144e.bindTooltip(
+                `<div>
+                     A, step 10<br><b>Kampung Batu Feringgi</b><br>population 4,000<br>fuel on arrival 2,537 kg<br>cargo on arrival 600 kg<br>5.4695, 100.2445
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4e25d2f94d27b3947d16724df7555036 = L.circleMarker(
+                [6.36257, 99.7832],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_4e25d2f94d27b3947d16724df7555036.bindTooltip(
+                `<div>
+                     A, step 11<br><b>Kampung Bukit Hantu</b><br>population 1,000<br>fuel on arrival 2,252 kg<br>cargo on arrival 400 kg<br>6.3626, 99.7832
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_28041309a92361d3c8bfd4fc0a459e1b = L.circleMarker(
+                [5.53333, 100.73333],
+                {"bubblingMouseEvents": true, "color": "#0077BB", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#0077BB", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_691999cc3a2418b37ba2a1360a2184a6);
+        
+    
+            circle_marker_28041309a92361d3c8bfd4fc0a459e1b.bindTooltip(
+                `<div>
+                     A, step 12<br><b>Kampong Bakai</b><br>population 12,235<br>fuel on arrival 1,901 kg<br>cargo on arrival 200 kg<br>5.5333, 100.7333
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_691999cc3a2418b37ba2a1360a2184a6.addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var feature_group_3ec62988f73e868db86cb22d5c62706e = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_985895c7bd2062a3b6597ff23c5e780e = L.polyline(
+                [[4.98333, 101.21667], [5.53333, 100.73333], [5.33096, 100.28296], [5.46948, 100.24449], [6.36257, 99.7832], [6.11625, 102.24229], [6.05, 102.35], [5.37293, 103.02053], [3.8682, 102.5862], [2.1586, 102.3475], [3.04384, 101.58062], [3.12966, 101.68424], [3.16866, 101.65076], [4.98333, 101.21667]],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#EE3377", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            var circle_marker_b98a423b38c9159624fc261d743c4453 = L.circleMarker(
+                [5.53333, 100.73333],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_b98a423b38c9159624fc261d743c4453.bindTooltip(
+                `<div>
+                     B, step 1<br><b>Kampong Bakai</b><br>population 12,235<br>fuel on arrival 5,159 kg<br>cargo on arrival 2,400 kg<br>5.5333, 100.7333
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fa16496f0867820eecf87a8e9f5e264e = L.circleMarker(
+                [5.33096, 100.28296],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_fa16496f0867820eecf87a8e9f5e264e.bindTooltip(
+                `<div>
+                     B, step 2<br><b>Relau</b><br>population 18,755<br>fuel on arrival 5,003 kg<br>cargo on arrival 2,200 kg<br>5.3310, 100.2830
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_21c100fd054750966637032d353adb28 = L.circleMarker(
+                [5.46948, 100.24449],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_21c100fd054750966637032d353adb28.bindTooltip(
+                `<div>
+                     B, step 3<br><b>Kampung Batu Feringgi</b><br>population 4,000<br>fuel on arrival 4,957 kg<br>cargo on arrival 2,000 kg<br>5.4695, 100.2445
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d83e473fd125fe31d0d1b16f639a564e = L.circleMarker(
+                [6.36257, 99.7832],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_d83e473fd125fe31d0d1b16f639a564e.bindTooltip(
+                `<div>
+                     B, step 4<br><b>Kampung Bukit Hantu</b><br>population 1,000<br>fuel on arrival 4,643 kg<br>cargo on arrival 1,800 kg<br>6.3626, 99.7832
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7c638bdb3000c454925402082767648e = L.circleMarker(
+                [6.11625, 102.24229],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_7c638bdb3000c454925402082767648e.bindTooltip(
+                `<div>
+                     B, step 5<br><b>Kampung Wakaf Sku</b><br>population 1,125<br>fuel on arrival 3,888 kg<br>cargo on arrival 1,600 kg<br>6.1162, 102.2423
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b77ae6b766a2f772beef756618448208 = L.circleMarker(
+                [6.05, 102.35],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_b77ae6b766a2f772beef756618448208.bindTooltip(
+                `<div>
+                     B, step 6<br><b>Kampong Chap</b><br>population 2,780<br>fuel on arrival 3,850 kg<br>cargo on arrival 1,400 kg<br>6.0500, 102.3500
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5e6777fbd25a19337d7e48cd9053492c = L.circleMarker(
+                [5.37293, 103.02053],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_5e6777fbd25a19337d7e48cd9053492c.bindTooltip(
+                `<div>
+                     B, step 7<br><b>Kuala Nerus</b><br>population 93,485<br>fuel on arrival 3,565 kg<br>cargo on arrival 1,200 kg<br>5.3729, 103.0205
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4d933fb1ce627f9ad00303a5ac2aefce = L.circleMarker(
+                [3.8682, 102.5862],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_4d933fb1ce627f9ad00303a5ac2aefce.bindTooltip(
+                `<div>
+                     B, step 8<br><b>Kampung Perak</b><br>population 44,964<br>fuel on arrival 3,103 kg<br>cargo on arrival 1,000 kg<br>3.8682, 102.5862
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8f86df176ae1d852318e418ae39357c2 = L.circleMarker(
+                [2.1586, 102.3475],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_8f86df176ae1d852318e418ae39357c2.bindTooltip(
+                `<div>
+                     B, step 9<br><b>Kampung Umbai</b><br>population 8,989<br>fuel on arrival 2,603 kg<br>cargo on arrival 800 kg<br>2.1586, 102.3475
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_148e62534a040ba2102436927c9f9c23 = L.circleMarker(
+                [3.04384, 101.58062],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_148e62534a040ba2102436927c9f9c23.bindTooltip(
+                `<div>
+                     B, step 10<br><b>Subang Jaya</b><br>population 708,296<br>fuel on arrival 2,269 kg<br>cargo on arrival 600 kg<br>3.0438, 101.5806
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_100a741e66b68c101a134a45a7b43b41 = L.circleMarker(
+                [3.12966, 101.68424],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_100a741e66b68c101a134a45a7b43b41.bindTooltip(
+                `<div>
+                     B, step 11<br><b>Brickfields</b><br>population 12,000<br>fuel on arrival 2,231 kg<br>cargo on arrival 400 kg<br>3.1297, 101.6842
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7b16aa057820e93e09137de9fcba8f6e = L.circleMarker(
+                [3.16866, 101.65076],
+                {"bubblingMouseEvents": true, "color": "#EE3377", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EE3377", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_3ec62988f73e868db86cb22d5c62706e);
+        
+    
+            circle_marker_7b16aa057820e93e09137de9fcba8f6e.bindTooltip(
+                `<div>
+                     B, step 12<br><b>Mont Kiara</b><br>population 30,643<br>fuel on arrival 2,216 kg<br>cargo on arrival 200 kg<br>3.1687, 101.6508
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_3ec62988f73e868db86cb22d5c62706e.addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_469c8a45028f4ce04eccd06b18f772dc = L.polyline(
+                [[4.98333, 101.21667], [5.53333, 100.73333], [5.33096, 100.28296], [5.46948, 100.24449], [6.36257, 99.7832], [6.11625, 102.24229], [6.05, 102.35], [5.37293, 103.02053], [3.8682, 102.5862], [2.1586, 102.3475], [3.04384, 101.58062], [3.12966, 101.68424], [3.16866, 101.65076], [4.98333, 101.21667]],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#33BBEE", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            var circle_marker_2c13132fd5ff86188f299fb04266da2a = L.circleMarker(
+                [5.53333, 100.73333],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_2c13132fd5ff86188f299fb04266da2a.bindTooltip(
+                `<div>
+                     B on A, step 1<br><b>Kampong Bakai</b><br>population 12,235<br>fuel on arrival 5,159 kg<br>cargo on arrival 2,400 kg<br>5.5333, 100.7333
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b16a2c72380aef49aeb168c6c842185c = L.circleMarker(
+                [5.33096, 100.28296],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_b16a2c72380aef49aeb168c6c842185c.bindTooltip(
+                `<div>
+                     B on A, step 2<br><b>Relau</b><br>population 18,755<br>fuel on arrival 5,003 kg<br>cargo on arrival 2,200 kg<br>5.3310, 100.2830
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_72758f06bec63169b188d002b6a54e40 = L.circleMarker(
+                [5.46948, 100.24449],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_72758f06bec63169b188d002b6a54e40.bindTooltip(
+                `<div>
+                     B on A, step 3<br><b>Kampung Batu Feringgi</b><br>population 4,000<br>fuel on arrival 4,957 kg<br>cargo on arrival 2,000 kg<br>5.4695, 100.2445
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c59e926100dca899e0d364ad6c193561 = L.circleMarker(
+                [6.36257, 99.7832],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_c59e926100dca899e0d364ad6c193561.bindTooltip(
+                `<div>
+                     B on A, step 4<br><b>Kampung Bukit Hantu</b><br>population 1,000<br>fuel on arrival 4,643 kg<br>cargo on arrival 1,800 kg<br>6.3626, 99.7832
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fcd2eb6c6bec5a36939f69cb4c3550c8 = L.circleMarker(
+                [6.11625, 102.24229],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_fcd2eb6c6bec5a36939f69cb4c3550c8.bindTooltip(
+                `<div>
+                     B on A, step 5<br><b>Kampung Wakaf Sku</b><br>population 1,125<br>fuel on arrival 3,888 kg<br>cargo on arrival 1,600 kg<br>6.1162, 102.2423
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b13a50bef542762f554f75861fc8f6db = L.circleMarker(
+                [6.05, 102.35],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_b13a50bef542762f554f75861fc8f6db.bindTooltip(
+                `<div>
+                     B on A, step 6<br><b>Kampong Chap</b><br>population 2,780<br>fuel on arrival 3,850 kg<br>cargo on arrival 1,400 kg<br>6.0500, 102.3500
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_29c0f0cf74c1699181d960c79c3ba968 = L.circleMarker(
+                [5.37293, 103.02053],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_29c0f0cf74c1699181d960c79c3ba968.bindTooltip(
+                `<div>
+                     B on A, step 7<br><b>Kuala Nerus</b><br>population 93,485<br>fuel on arrival 3,565 kg<br>cargo on arrival 1,200 kg<br>5.3729, 103.0205
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fc4ac72471b80e3be3ac33dfdca8c6ba = L.circleMarker(
+                [3.8682, 102.5862],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_fc4ac72471b80e3be3ac33dfdca8c6ba.bindTooltip(
+                `<div>
+                     B on A, step 8<br><b>Kampung Perak</b><br>population 44,964<br>fuel on arrival 3,103 kg<br>cargo on arrival 1,000 kg<br>3.8682, 102.5862
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d1bcda114d123b8718a2032e3f2f28c5 = L.circleMarker(
+                [2.1586, 102.3475],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_d1bcda114d123b8718a2032e3f2f28c5.bindTooltip(
+                `<div>
+                     B on A, step 9<br><b>Kampung Umbai</b><br>population 8,989<br>fuel on arrival 2,603 kg<br>cargo on arrival 800 kg<br>2.1586, 102.3475
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_afc7a90252bc06fbd457312d6c815a40 = L.circleMarker(
+                [3.04384, 101.58062],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_afc7a90252bc06fbd457312d6c815a40.bindTooltip(
+                `<div>
+                     B on A, step 10<br><b>Subang Jaya</b><br>population 708,296<br>fuel on arrival 2,269 kg<br>cargo on arrival 600 kg<br>3.0438, 101.5806
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6321251b07cbe5357656dd162286f539 = L.circleMarker(
+                [3.12966, 101.68424],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_6321251b07cbe5357656dd162286f539.bindTooltip(
+                `<div>
+                     B on A, step 11<br><b>Brickfields</b><br>population 12,000<br>fuel on arrival 2,231 kg<br>cargo on arrival 400 kg<br>3.1297, 101.6842
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5c9fe27e927ab8709c932689a12a22bf = L.circleMarker(
+                [3.16866, 101.65076],
+                {"bubblingMouseEvents": true, "color": "#33BBEE", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#33BBEE", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 1}
+            ).addTo(feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c);
+        
+    
+            circle_marker_5c9fe27e927ab8709c932689a12a22bf.bindTooltip(
+                `<div>
+                     B on A, step 12<br><b>Mont Kiara</b><br>population 30,643<br>fuel on arrival 2,216 kg<br>cargo on arrival 200 kg<br>3.1687, 101.6508
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c.addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            var circle_marker_2f2343c1e9d79ca5e1d420e6ea6f7b0b = L.circleMarker(
+                [4.98333, 101.21667],
+                {"bubblingMouseEvents": true, "color": "#1F2A36", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#1F2A36", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 2}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+        
+    
+            circle_marker_2f2343c1e9d79ca5e1d420e6ea6f7b0b.bindTooltip(
+                `<div>
+                     Base: Kampung Sungai Semaliang
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            map_8f14dcfc7ac4d7ddd19937b68c0cd894.fitBounds(
+                [[2.1586, 99.7832], [6.36257, 103.02053]],
+                {"padding": [30, 30]}
+            );
+        
+    
+            var layer_control_51a39bcb5f6c9e86fb7492884da757e4_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_611cf0b9dba634ae849ca728f2ebda7c,
+                },
+                overlays :  {
+                    "DP" : feature_group_ad82a25417fc96b9e9585315384ff395,
+                    "NN" : feature_group_598700020db78a0c66081518778bdb70,
+                    "A" : feature_group_691999cc3a2418b37ba2a1360a2184a6,
+                    "B" : feature_group_3ec62988f73e868db86cb22d5c62706e,
+                    "B on A" : feature_group_6ad82e4a0afe4b9ae7f5099d12bb483c,
+                },
+            };
+            let layer_control_51a39bcb5f6c9e86fb7492884da757e4 = L.control.layers(
+                layer_control_51a39bcb5f6c9e86fb7492884da757e4_layers.base_layers,
+                layer_control_51a39bcb5f6c9e86fb7492884da757e4_layers.overlays,
+                {
+  "position": "topleft",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_8f14dcfc7ac4d7ddd19937b68c0cd894);
+
+        
+</script>
+</html>

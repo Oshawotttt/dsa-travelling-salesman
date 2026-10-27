@@ -17,7 +17,7 @@ airdrop/             Python package
   approach_b.py      Approach B: best-improvement local search (2-opt, add, swap, replace 1 with 2)
   exact_dp.py        exact backward subset DP for small instances (up to 15 towns)
   plot.py            interactive HTML map of labelled routes (folium); imported on its own, not from airdrop
-experiments/         experiment scripts: common.py (shared runner and CSV output), e1_ to e4_ folders each with run.py and out/
+experiments/         experiment scripts: common.py (shared runner and CSV output), maps.py (route maps from an output folder), e1_ to e4_ folders each with run.py and out/
 tests/               pytest suite, one file per module
 data/                town data, not in git (see Data below)
 docs/
@@ -113,7 +113,20 @@ To evaluate any route yourself, use `airdrop.evaluate(inst, route)`.
 ## Plotting routes
 
 `airdrop.plot` writes a zoomable folium map of Malaysia as an `.html` file, with one toggleable layer per route.
-It is called from Python only: there is no command-line entry point, no PNG output, and no experiment script.
+
+To map an experiment's routes, point `experiments.maps` at its output folder:
+
+```
+python -m experiments.maps experiments/e3_bases/out          # writes experiments/e3_bases/out/maps/*.html
+python -m experiments.maps experiments/e*/out                # every experiment
+python -m experiments.maps experiments/e3_bases/out --out slides/maps
+```
+
+It reads only `runs.csv` and `routes.csv`, so nothing is re-solved and it takes seconds.
+It writes one map per instance (same base, town count, sample and `F`), with one layer per algorithm, named like `perak_n745_F21100.html`.
+Grey circles on these maps are only the towns some route visits, since the CSVs do not list the unvisited ones.
+
+From Python:
 
 ```python
 from airdrop.plot import plot_routes_html
@@ -123,8 +136,8 @@ plot_routes_html(inst, {"A": a.route, "B": b.route}, "out/route.html", title="Pe
 
 - One map holds 1 to 5 routes. Default colours: NN `#EE7733`, A `#0077BB`, B `#EE3377`, B on A `#33BBEE`, DP `#009988`; legend box `#F4F6F8` with `#1F2A36` text; unvisited towns `#A9B4C2`. Override with the `colors` and `theme` arguments.
 - Hover a visited town for its route, step, name, population, fuel and cargo.
-- The map needs internet every time it is opened: the CartoDB Positron tiles are fetched live and are not cached or bundled offline.
-- Tile caveat: folium warns `CartoDB tiles now require an API key`. The tile URL it writes has no key and still served tiles on 2026-10-27; access may stop working later.
+- The map needs internet every time it is opened: the OpenStreetMap tiles are fetched live and are not cached or bundled offline.
+- Tiles: CartoDB Positron (used until 2026-10-27) now shows an "API KEY REQUIRED" placeholder instead of the map, so the maps use the keyless OpenStreetMap tiles.
 - The HTML file can be embedded in slides with an `<iframe>`.
 - The map needs only `folium`; it does not use `matplotlib` (used by the experiment plots) or `contextily`.
 - [docs/CONTRACTS.md](docs/CONTRACTS.md) (Map plots) has the signatures and behaviour.
