@@ -134,3 +134,23 @@ def test_unvisited_towns_have_no_tooltip(tmp_path):
 def test_colors_match_case_insensitively():
     layers = route_layers(instance(), {"x": [1], "y": [2]}, colors={"x": "#ee7733"})
     assert colors_of(layers) == {"x": "#ee7733", "y": "#0077BB"}
+
+
+def test_unknown_label_before_known_label_keeps_known_color():
+    layers = route_layers(instance(), {"x": [1], "NN": [2]})
+    assert colors_of(layers) == {"x": "#0077BB", "NN": "#EE7733"}
+
+
+def test_empty_color_override_is_used():
+    layers = route_layers(instance(), {"A": [1]}, colors={"A": ""})
+    assert colors_of(layers) == {"A": ""}
+
+
+def test_backticks_and_template_markers_are_escaped(tmp_path):
+    towns = [Town(11, "Tok`s ${town}", 4.6, 101.1, 1000)]
+    path = plot_routes_html(Instance(BASE, towns, Params()), {"R`${x}": [1]}, tmp_path / "r.html",
+                            title="T`${t}")
+    html = path.read_text(encoding="utf-8")
+    for raw in ["Tok`s", "${town}", "R`", "${x}", "T`", "${t}"]:
+        assert raw not in html
+    assert "Tok&#96;s &#36;{town}" in html

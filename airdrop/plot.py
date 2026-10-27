@@ -46,8 +46,10 @@ def route_layers(inst: Instance, routes: Mapping[str, Sequence[int]],
         raise ValueError("at least 1 route per map, got 0")
     if len(routes) > len(ROUTE_COLORS):
         raise ValueError(f"at most {len(ROUTE_COLORS)} routes per map, got {len(routes)}")
-    chosen = {label: (colors or {}).get(label, ROUTE_COLORS.get(label)) for label in routes}
-    used = {c.upper() for c in chosen.values() if c}
+    colors = colors or {}
+    chosen = {label: colors[label] if label in colors else ROUTE_COLORS.get(label)
+              for label in routes}
+    used = {c.upper() for c in chosen.values() if c is not None}
     spare = [c for c in ROUTE_COLORS.values() if c.upper() not in used]
     layers = []
     for label, route in routes.items():
@@ -55,9 +57,14 @@ def route_layers(inst: Instance, routes: Mapping[str, Sequence[int]],
             stops = tuple(trace(inst, route))
         except ValueError as e:
             raise ValueError(f"route {label!r}: {e}") from e
-        color = chosen[label] or spare.pop(0)
+        color = spare.pop(0) if chosen[label] is None else chosen[label]
         layers.append(RouteLayer(label, color, stops))
     return layers
+
+
+def _html(text: str) -> str:
+    """HTML-escape text, plus ` and $, since folium puts tooltips in a JS template literal."""
+    return escape(text).replace("`", "&#96;").replace("$", "&#36;")
 
 
 def _dot(where: folium.Map | folium.FeatureGroup, lat: float, lon: float, radius: float,
@@ -67,9 +74,21 @@ def _dot(where: folium.Map | folium.FeatureGroup, lat: float, lon: float, radius
 
 
 def _tooltip(label: str, stop: Stop) -> str:
-    return (f"{escape(label)}, step {stop.step}<br><b>{escape(stop.name)}</b><br>"
+    return (f"{_html(label)}, step {stop.step}<br><b>{_html(stop.name)}</b><br>"
             f"population {stop.population:,}<br>fuel on arrival {stop.fuel_kg:,.0f} kg<br>"
             f"cargo on arrival {stop.cargo_kg:,.0f} kg<br>{stop.lat:.4f}, {stop.lon:.4f}")
+
+
+
+def _legend(layers: Sequence[RouteLayer], title: str | None, palette: Mapping[str, str]) -> str:
+    rows = "".join(
+        f'<div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;'
+        f'vertical-align:middle;background:{layer.color}"></span>{_html(layer.label)}</div>'
+        for layer in layers)
+    head = f"<div><b>{_html(title)}</b></div>" if title else ""
+    return (f'<div style="position:fixed;top:10px;right:10px;z-index:9999;padding:8px 10px;'
+            f'background:{palette["background"]};color:{palette["text"]};border-radius:4px;'
+            f'box-shadow:0 1px 4px rgba(0,0,0,0.3);font-size:13px">{head}{rows}</div>')
 
 
 def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: str | Path,
@@ -90,7 +109,7 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
     for town in inst.towns:
         _dot(m, town.lat, town.lon, radius=2, color=palette["towns"], weight=0, opacity=0.8)
     for layer in layers:
-        group = folium.FeatureGroup(name=escape(layer.label))
+        group = folium.FeatureGroup(name=_html(layer.label))
         points = [[s.lat, s.lon] for s in layer.stops]
         if len(layer.stops) > 2:
             folium.PolyLine(points, color=layer.color, weight=3, opacity=0.9).add_to(group)
@@ -100,21 +119,10 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
         group.add_to(m)
     base = inst.base
     _dot(m, base.lat, base.lon, radius=8, color=palette["text"], weight=2, opacity=1.0,
-         tooltip=f"Base: {escape(base.name)}")
+         tooltip=f"Base: {_html(base.name)}")
     folium.LayerControl(position="topleft", collapsed=False).add_to(m)
     m.get_root().html.add_child(folium.Element(_legend(layers, title, palette)))
     path = Path(path).resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
     m.save(str(path))
     return path
-
-
-def _legend(layers: Sequence[RouteLayer], title: str | None, palette: Mapping[str, str]) -> str:
-    rows = "".join(
-        f'<div><span style="display:inline-block;width:14px;height:4px;margin-right:6px;'
-        f'vertical-align:middle;background:{layer.color}"></span>{escape(layer.label)}</div>'
-        for layer in layers)
-    head = f"<div><b>{escape(title)}</b></div>" if title else ""
-    return (f'<div style="position:fixed;top:10px;right:10px;z-index:9999;padding:8px 10px;'
-            f'background:{palette["background"]};color:{palette["text"]};border-radius:4px;'
-            f'box-shadow:0 1px 4px rgba(0,0,0,0.3);font-size:13px">{head}{rows}</div>')
