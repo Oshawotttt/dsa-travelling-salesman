@@ -24,9 +24,18 @@ def _fuel_before(inst: Instance, f: float, d: float, cargo: float) -> float:
 
 
 def _smallest_tied(options: list[tuple[int, float]]) -> tuple[int, float]:
-    """(town, fuel) with the smallest town among those within TIE of the least fuel."""
+    """The smallest town among those within TIE of the least fuel, and that least fuel."""
     least = min(fuel for _, fuel in options)
-    return min(o for o in options if o[1] <= least * (1 + TIE))
+    return min(t for t, fuel in options if fuel <= least * (1 + TIE)), least
+
+
+def _rebuild(next_town: list[list[int]], mask: int, first: int) -> list[int]:
+    """The route through the towns of mask, starting at first and following next_town."""
+    route, t = [], first
+    while t:
+        route.append(t)
+        t, mask = next_town[mask][t], mask & ~(1 << (t - 1))
+    return route
 
 
 def exact_dp(inst: Instance, max_n: int = 15) -> SolveResult:
@@ -45,7 +54,8 @@ def exact_dp(inst: Instance, max_n: int = 15) -> SolveResult:
     for mask in range(1, full):
         size[mask] = size[mask >> 1] + (mask & 1)
     stats = {"states": 0, "transitions": 0}
-    best_pop, best_fuel, best_route = 0, p.R, []
+    # sets with the largest population so far, as (fuel needed, route); the empty route to start
+    best_pop, best = 0, [(p.R, [])]
     for mask in range(1, full):
         k = size[mask]
         if p.w * k > p.C:
@@ -56,7 +66,7 @@ def exact_dp(inst: Instance, max_n: int = 15) -> SolveResult:
         for j in towns:
             rest = mask & ~(1 << (j - 1))
             if not rest:
-                via, fuel = 0, _fuel_before(inst, p.R, inst.dist(j, 0), 0.0)
+                then, fuel = 0, _fuel_before(inst, p.R, inst.dist(j, 0), 0.0)
                 stats["transitions"] += 1
             else:
                 prev = need[rest]
@@ -66,10 +76,10 @@ def exact_dp(inst: Instance, max_n: int = 15) -> SolveResult:
                 if not options:
                     continue
                 stats["transitions"] += len(options)
-                via, fuel = _smallest_tied(options)
+                then, fuel = _smallest_tied(options)
             if fuel > limit:
                 continue
-            row[j], next_town[mask][j] = fuel, via
+            row[j], next_town[mask][j] = fuel, then
             stats["states"] += 1
         # takeoff: the smallest first town j among those needing the least fuel
         options = [(j, _fuel_before(inst, row[j], inst.dist(0, j), p.w * k))
@@ -80,12 +90,13 @@ def exact_dp(inst: Instance, max_n: int = 15) -> SolveResult:
         if not inst.fits(k, f0):
             continue
         pop = sum(inst.population(t) for t in towns)
-        if pop < best_pop or (pop == best_pop and f0 > best_fuel * (1 + TIE)):
+        if pop < best_pop:
             continue
-        route, rest, t = [], mask, first
-        while t:
-            route.append(t)
-            t, rest = next_town[rest][t], rest & ~(1 << (t - 1))
-        if pop > best_pop or f0 < best_fuel * (1 - TIE) or route < best_route:
-            best_pop, best_fuel, best_route = pop, f0, route
+        if pop > best_pop:
+            best_pop, best = pop, []
+        least = min([f0, *(fuel for fuel, _ in best)])
+        best = [(fuel, route) for fuel, route in best if fuel <= least * (1 + TIE)]
+        if f0 <= least * (1 + TIE):
+            best.append((f0, _rebuild(next_town, mask, first)))
+    best_route = min(route for _, route in best)
     return SolveResult(best_route, evaluate(inst, best_route), stats)

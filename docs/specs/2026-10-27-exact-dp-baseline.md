@@ -113,7 +113,7 @@ def trace(inst: Instance, route: Sequence[int]) -> list[Stop]
   - Decisions made during implementation:
     - `before` (`_fuel_before` in the code) is computed as `f + (b·(f + cargo) + a)·φ(b, d)`, the same formula as above, reusing `model.phi` so `b = 0` is exact and an overflow gives `inf` (NaN mapped to `inf`). Needs no doc: the code comment states it.
     - `stats["transitions"]` counts every `before` call that computes a candidate `need` entry, including the landing leg of `|U| = 1`; takeoff legs are not counted. Doc: `docs/CONTRACTS.md`.
-    - Ties use a relative tolerance `TIE = 1e-9`: in `need`, at takeoff and between sets of equal population, fuels within `1e-9` relative of the least count as equal, and the smallest town index (so the smallest route as a tuple) wins. Without it, a route and its reverse at `b = 0` (equal fuel, different rounding) were picked by rounding noise, not by the tuple rule. Added in the code review; tested by `tests/test_exact_dp.py::test_ties_go_to_smallest_route` and the route check in `test_matches_brute_force`. Doc: `docs/PROBLEM.md`, Exact DP, and `docs/CONTRACTS.md`.
+    - Ties use a relative tolerance `TIE = 1e-9`: in `need`, at takeoff and between sets of equal population, fuels within `1e-9` relative of the least count as equal, and the smallest town index (so the smallest route as a tuple) wins. `need` and `F₀(U)` still store the least fuel (not the tied choice's), so pruning and `fits` use exact values; among sets of the largest population, every set within `1e-9` of the least fuel seen is kept and the smallest route wins at the end. Without it, a route and its reverse at `b = 0` (equal fuel, different rounding) were picked by rounding noise, not by the tuple rule. Added in the code review; tested by `tests/test_exact_dp.py::test_ties_go_to_smallest_route` and the route check in `test_matches_brute_force`. Doc: `docs/PROBLEM.md`, Exact DP, and `docs/CONTRACTS.md`.
     - A set with `w·|U| > C` is skipped whole, before any entry is computed. Doc: `docs/PROBLEM.md`, Exact DP (pruning).
 
 ### S2 Route trace (per-stop record)
@@ -139,6 +139,7 @@ def trace(inst: Instance, route: Sequence[int]) -> list[Stop]
     - `trace` raises only on a bad index or infinite fuel needed, as the interface says; a route that is infeasible with finite fuel (duplicate, payload, fuel cap, takeoff weight) is still traced. Doc: `docs/CONTRACTS.md`.
     - The landing stop's `fuel_kg` is the forward-flown value (equal to `R` within rounding), not set to `R`, so the `leg_fuel_kg` values add up to `F₀_needed − fuel_kg` at landing. Doc: `docs/CONTRACTS.md`.
     - Takeoff and landing stops carry the base's `geonameid`, `name`, `lat`, `lon`. Doc: `docs/CONTRACTS.md`.
+    - Per-stop `fuel_kg` is checked against an independent RK4 integration of `dF/dx = −(a + b·(cargo + F))` (1 km steps) to `1e-9` relative, not against the closed form, which would recompute the code's own formula. Added in the code review. Needs no doc.
     - Added `tests/test_model.py::test_trace_exported` to check `Stop` and `trace` are exported from `airdrop`. Needs no doc.
 
 ## 6. Human checks

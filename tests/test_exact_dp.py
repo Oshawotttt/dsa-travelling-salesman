@@ -6,11 +6,10 @@ import pytest
 from airdrop.approach_a import greedy_insertion
 from airdrop.approach_b import local_search
 from airdrop.baseline import nearest_neighbour
-from airdrop.exact_dp import exact_dp
+from airdrop.exact_dp import TIE, exact_dp
 from airdrop.model import Base, Instance, Params, Town, control_params, evaluate
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
-TIE = 1e-9  # relative fuel difference treated as a tie
 
 
 def random_instance(seed, n, params=Params()):
@@ -57,13 +56,13 @@ def test_matches_brute_force(inst):
 
 
 # b = 0: a route and its reverse need the same fuel, up to rounding
-TIES = [random_instance(seed, n=1 + seed % 7, params=control_params(Params(F=3_500.0, C=800.0)))
+TIE_INSTANCES = [random_instance(seed, n=1 + seed % 7, params=control_params(Params(F=3_500.0, C=800.0)))
         for seed in (47, 172, 187)] + [
     random_instance(seed, n=n, params=control_params(Params(F=4_500.0, C=1_000.0)))
     for seed in range(20) for n in (2, 3, 4)]
 
 
-@pytest.mark.parametrize("inst", TIES)
+@pytest.mark.parametrize("inst", TIE_INSTANCES)
 def test_ties_go_to_smallest_route(inst):
     assert exact_dp(inst).route == brute_force(inst)[2]
 
