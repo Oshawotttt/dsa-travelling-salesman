@@ -47,7 +47,8 @@ def route_layers(inst: Instance, routes: Mapping[str, Sequence[int]],
     if len(routes) > len(ROUTE_COLORS):
         raise ValueError(f"at most {len(ROUTE_COLORS)} routes per map, got {len(routes)}")
     chosen = {label: (colors or {}).get(label, ROUTE_COLORS.get(label)) for label in routes}
-    spare = [c for c in ROUTE_COLORS.values() if c not in chosen.values()]
+    used = {c.upper() for c in chosen.values() if c}
+    spare = [c for c in ROUTE_COLORS.values() if c.upper() not in used]
     layers = []
     for label, route in routes.items():
         try:
@@ -77,27 +78,29 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
                      theme: Mapping[str, str] | None = None) -> Path:
     """Write a zoomable folium map of the routes to an HTML file and return its resolved path.
 
-    Every town is a small circle in theme["towns"], with no tooltip; each route is a straight lat/lon polyline
-    in its own toggleable layer, with its towns as larger circles in the route colour and a
-    tooltip per drop; the base is the largest circle, in theme["text"]. A fixed legend box
-    (top right) shows the title and each route's colour. Opening the file needs internet for
-    the CartoDB Positron tiles.
+    Every town is a small circle in theme["towns"], with no tooltip; each route is a straight
+    lat/lon polyline in its own toggleable layer, with its towns as larger circles in the route
+    colour and a tooltip per drop; the base is the largest circle, in theme["text"]. A fixed
+    legend box (top right) shows the title and each route's colour. Opening the file needs
+    internet for the CartoDB Positron tiles.
     """
     layers = route_layers(inst, routes, colors)
     palette = {**THEME, **(theme or {})}
     m = folium.Map(location=[inst.base.lat, inst.base.lon], zoom_start=7, tiles="CartoDB positron")
-    for t in inst.towns:
-        _dot(m, t.lat, t.lon, 2, palette["towns"], 0, 0.8)
+    for town in inst.towns:
+        _dot(m, town.lat, town.lon, radius=2, color=palette["towns"], weight=0, opacity=0.8)
     for layer in layers:
         group = folium.FeatureGroup(name=escape(layer.label))
         points = [[s.lat, s.lon] for s in layer.stops]
         if len(layer.stops) > 2:
             folium.PolyLine(points, color=layer.color, weight=3, opacity=0.9).add_to(group)
         for stop in layer.stops[1:-1]:
-            _dot(group, stop.lat, stop.lon, 5, layer.color, 1, 1.0, _tooltip(layer.label, stop))
+            _dot(group, stop.lat, stop.lon, radius=5, color=layer.color, weight=1, opacity=1.0,
+                 tooltip=_tooltip(layer.label, stop))
         group.add_to(m)
     base = inst.base
-    _dot(m, base.lat, base.lon, 8, palette["text"], 2, 1.0, f"Base: {escape(base.name)}")
+    _dot(m, base.lat, base.lon, radius=8, color=palette["text"], weight=2, opacity=1.0,
+         tooltip=f"Base: {escape(base.name)}")
     folium.LayerControl(position="topleft", collapsed=False).add_to(m)
     m.get_root().html.add_child(folium.Element(_legend(layers, title, palette)))
     path = Path(path).resolve()

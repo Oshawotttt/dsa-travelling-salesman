@@ -129,3 +129,8 @@ def test_unvisited_towns_have_no_tooltip(tmp_path):
     html = html_of(tmp_path, {"A": [1]})
     assert "Alpha" in html
     assert "Bravo" not in html and "Charlie" not in html
+
+
+def test_colors_match_case_insensitively():
+    layers = route_layers(instance(), {"x": [1], "y": [2]}, colors={"x": "#ee7733"})
+    assert colors_of(layers) == {"x": "#ee7733", "y": "#0077BB"}
