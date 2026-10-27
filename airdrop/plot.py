@@ -18,6 +18,9 @@ THEME: dict[str, str] = {            # slide body: one slate family, light
     "text": "#1F2A36",               # legend text, base marker
     "towns": "#A9B4C2",              # unvisited towns
 }
+TILES = "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png?lang=en"   # keyless, English labels
+TILES_ATTR = ('&copy; <a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia</a>, '
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors')
 ROUTE_COLORS: dict[str, str] = {     # Paul Tol "vibrant", in this order
     "NN": "#EE7733",
     "A": "#0077BB",
@@ -117,7 +120,7 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
     lat/lon polyline in its own toggleable layer, with its towns as larger circles in the route
     colour and a tooltip per drop; the base is the largest circle, in theme["text"]. A fixed
     legend box (top right) shows the title and each route's colour. Opening the file needs
-    internet for the OpenStreetMap tiles.
+    internet for the Wikimedia tiles.
     """
     return _save_map(inst.base, inst.towns, route_layers(inst, routes, colors), path, title, theme)
 
@@ -134,7 +137,8 @@ def plot_stops_html(base: Base, towns: Sequence[Town], routes: Mapping[str, Sequ
 def _save_map(base: Base, towns: Sequence[Town], layers: Sequence[RouteLayer], path: str | Path,
               title: str | None, theme: Mapping[str, str] | None) -> Path:
     palette = {**THEME, **(theme or {})}
-    m = folium.Map(location=[base.lat, base.lon], zoom_start=7, tiles="OpenStreetMap")
+    m = folium.Map(location=[base.lat, base.lon], zoom_start=7, tiles=None)
+    folium.TileLayer(TILES, attr=TILES_ATTR, name="Map", control=False).add_to(m)
     for town in towns:
         _dot(m, town.lat, town.lon, radius=2, color=palette["towns"], weight=0, opacity=0.8)
     for layer in layers:
