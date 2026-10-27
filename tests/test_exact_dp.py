@@ -98,3 +98,19 @@ def test_nothing_fits():
 def test_deterministic():
     inst = random_instance(7, n=9, params=Params(F=4_000.0, C=1_000.0))
     assert exact_dp(inst) == exact_dp(inst)
+
+
+def test_fuel_cap_on_the_boundary():
+    # F set to a route's own fuel needed, to the last bit: the DP must agree with evaluate.
+    # At b = 0 the route's reverse needs the same fuel up to rounding, and may be over F.
+    for seed in range(60):
+        loose = random_instance(200 + seed, n=2 + seed % 4, params=control_params(Params(F=1e9)))
+        rng = random.Random(seed)
+        route = rng.sample(range(1, loose.n + 1), loose.n)
+        for r in (route, route[::-1]):
+            F = evaluate(loose, r).fuel_needed
+            inst = Instance(BASE0, loose.towns, control_params(Params(F=F, MTOW=1e12)))
+            result = exact_dp(inst)
+            population, _, best = brute_force(inst)
+            assert result.eval.feasible
+            assert (result.eval.population, result.route) == (population, best)
