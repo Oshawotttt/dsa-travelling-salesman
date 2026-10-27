@@ -9,7 +9,7 @@ The goal is to reach as many people as possible.
 
 ```
 airdrop/             Python package
-  model.py           towns, the five bases, aircraft parameters, distances, route evaluator
+  model.py           towns, the six bases (3 rural, 3 non-rural), aircraft parameters, distances, route evaluator
   prefix.py          RouteState: prefix sums giving O(1) insertion, removal and 2-opt fuel costs
   approach_a.py      Approach A: greedy insertion, lazy max-heap or full re-scan selector
   baseline.py        nearest neighbour with a fuel cutoff (Approach B's starting route)

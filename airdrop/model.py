@@ -37,14 +37,18 @@ class Base:
     lon: float
 
 
-# PROBLEM.md, Bases table; coordinates as in data/MY.txt
+# PROBLEM.md, Bases table; coordinates as in data/MY.txt. Three rural sites, and one
+# existing airport near a populated area in each of the same regions.
 BASES: dict[str, Base] = {
     "perak": Base(1734611, "Kampung Sungai Semaliang", 4.98333, 101.21667),
-    "kelantan": Base(7609811, "Kemajuan Tanah Gugusan Aring", 4.8811, 102.3238),
-    "johor": Base(7567448, "Kampung Ponjot", 2.2366, 103.5823),
     "sarawak": Base(1737158, "Long Geng", 2.61667, 114.13333),
     "sabah": Base(1733926, "Kampung Balat", 5.3222, 117.6087),
+    "klia": Base(6301255, "Kuala Lumpur International Airport", 2.74558, 101.70992),
+    "kuching": Base(1734503, "Kuching International Airport", 1.4847, 110.34693),
+    "kota_kinabalu": Base(1772439, "Kota Kinabalu International Airport", 5.93721, 116.05118),
 }
+RURAL_BASES = ("perak", "sarawak", "sabah")
+URBAN_BASES = ("klia", "kuching", "kota_kinabalu")
 
 
 @dataclass(frozen=True)

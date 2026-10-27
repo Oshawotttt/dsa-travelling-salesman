@@ -2,6 +2,8 @@
 from airdrop.model import (
     BASES,
     M_REF,
+    RURAL_BASES,
+    URBAN_BASES,
     Base,
     Instance,
     Params,
@@ -15,6 +17,6 @@ from airdrop.model import (
 )
 
 __all__ = [
-    "BASES", "M_REF", "Base", "Instance", "Params", "RouteEval", "Town",
+    "BASES", "M_REF", "RURAL_BASES", "URBAN_BASES", "Base", "Instance", "Params", "RouteEval", "Town",
     "control_params", "evaluate", "fuel_end", "haversine_km", "load_towns",
 ]

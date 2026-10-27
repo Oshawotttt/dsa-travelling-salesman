@@ -7,6 +7,8 @@ import pytest
 
 from airdrop.model import (
     BASES,
+    RURAL_BASES,
+    URBAN_BASES,
     Base,
     Instance,
     Params,
@@ -149,16 +151,23 @@ def test_overflow_is_infeasible():
 
 
 def test_bases():
-    assert len(BASES) == 5
-    assert set(BASES) == {"perak", "kelantan", "johor", "sarawak", "sabah"}
-    assert {b.geonameid for b in BASES.values()} == {1734611, 7609811, 7567448, 1737158, 1733926}
+    assert len(BASES) == 6
+    assert set(BASES) == set(RURAL_BASES) | set(URBAN_BASES)
+    assert set(RURAL_BASES) == {"perak", "sarawak", "sabah"}
+    assert set(URBAN_BASES) == {"klia", "kuching", "kota_kinabalu"}
+    assert {b.geonameid for b in BASES.values()} == {
+        1734611, 1737158, 1733926, 6301255, 1734503, 1772439,
+    }
 
 
 @pytest.mark.skipif(not DATA.exists(), reason="data/cities_clean.csv missing")
 def test_data_smoke():
     towns = load_towns(DATA, min_population=0)
     assert len(towns) == 745
-    expected = {"perak": 30.8, "kelantan": 39.4, "johor": 35.9, "sarawak": 40.0, "sabah": 39.7}
+    expected = {
+        "perak": 30.8, "sarawak": 40.0, "sabah": 39.7,
+        "klia": 6.2, "kuching": 7.4, "kota_kinabalu": 1.7,
+    }
     for key, km in expected.items():
         base = BASES[key]
         nearest = min(haversine_km(base.lat, base.lon, t.lat, t.lon) for t in towns)

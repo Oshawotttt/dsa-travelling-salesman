@@ -27,7 +27,7 @@ Assumption 4 adds a weight-dependent, history-dependent cost, which makes our fo
 
 **Input**
 
-- A base (start and end of the route): one of five candidate airport sites (see [Bases](#bases)).
+- A base (start and end of the route): one of six candidate airports, three rural and three near populated areas (see [Bases](#bases)).
 - A set of candidate towns, each with latitude, longitude and population (from `data/cities_clean.csv`).
 - Haversine distance `d(i, j)` between every pair of locations.
 - Aircraft constants (C-130H, see [Parameters](#parameters)): empty weight `E`, maximum payload `C`, maximum takeoff weight `MTOW`, fuel cap `F` (tank size).
@@ -175,7 +175,7 @@ Each approach solves the whole variant: all four broken assumptions at once.
 - **Run time:** against number of towns `n`, using population thresholds from `eda.ipynb` (for example 83, 144, 355 and 745 towns).
 - **Optimality gap:** exact DP (below) on 10 random 12-town samples, with `F` set so about half the towns fit. Report the average and worst gap: heuristic population ÷ optimal population.
 - **Data-structure comparison:** lazy heap against full re-scan in Approach A.
-- **Base comparison:** population reached from each of the five bases at `F = 20 t`.
+- **Base comparison:** population reached from each of the six bases at `F = 20 t`, rural against non-rural in each region.
 - **Control:** `b = 0` with `a = c × 60,000 ≈ 4.2 kg/km` switches off the weight model and reduces the problem to the plain Orienteering Problem (`F₀_needed = R + a × D`). The average burn per km stays the same and only the weight effect is removed. It isolates the effect of the weight-dependent cost. (`c = 0` is not the control: with `a = c × E` it would burn no fuel at all.)
 - **Complexity analysis** of each approach, including the O(1) move evaluation with prefix sums.
 
@@ -194,17 +194,20 @@ Exact DP finds the true best route on small inputs. It covers every route, like 
 
 ## Bases
 
-The bases are sites for a new airport, chosen from `MY.txt` and treated as already built.
+There are six bases, two per region: one rural and one non-rural.
+Comparing the two in each region shows how much the start location matters.
+
+| Region | Type | GeoNames ID | Name | Coordinates | Elevation | Nearest town |
+|---|---|---|---|---|---|---|
+| Peninsula | Rural | 1734611 | Kampung Sungai Semaliang | 4.9833, 101.2167 | 104 m | 30.8 km |
+| Peninsula | Non-rural | 6301255 | Kuala Lumpur International Airport | 2.7456, 101.7099 | 20 m | 6.2 km |
+| Sarawak | Rural | 1737158 | Long Geng | 2.6167, 114.1333 | 121 m | 40.0 km |
+| Sarawak | Non-rural | 1734503 | Kuching International Airport | 1.4847, 110.3469 | 27 m | 7.4 km |
+| Sabah | Rural | 1733926 | Kampung Balat | 5.3222, 117.6087 | 39 m | 39.7 km |
+| Sabah | Non-rural | 1772439 | Kota Kinabalu International Airport | 5.9372, 116.0512 | 9 m | 1.7 km |
+
+The rural bases are sites for a new airport, chosen from `MY.txt` and treated as already built.
 Each is far from all towns in `cities_clean.csv`.
-
-| Region | GeoNames ID | Name | Coordinates | Elevation | Nearest town |
-|---|---|---|---|---|---|
-| Peninsula north (Perak) | 1734611 | Kampung Sungai Semaliang | 4.9833, 101.2167 | 104 m | 30.8 km |
-| Peninsula east (Kelantan) | 7609811 | Kemajuan Tanah Gugusan Aring | 4.8811, 102.3238 | 105 m | 39.4 km |
-| Peninsula south (Johor) | 7567448 | Kampung Ponjot | 2.2366, 103.5823 | 24 m | 35.9 km |
-| Sarawak | 1737158 | Long Geng | 2.6167, 114.1333 | 121 m | 40.0 km |
-| Sabah | 1733926 | Kampung Balat | 5.3222, 117.6087 | 39 m | 39.7 km |
-
 Selection filters:
 
 - No recorded population (`population == 0`).
@@ -214,13 +217,15 @@ Selection filters:
 - Within that, the site farthest from towns in each region.
 
 Long Geng already has an airstrip (`S.AIRF` row at the same point).
-Gugusan Aring is cleared plantation land.
+
+The non-rural bases are existing airports (`S.AIRP` rows in `MY.txt`): the main international airport of each region.
+Each sits inside a dense cluster of towns: 105 towns lie within 50 km of KLIA, against 14 for the Perak site.
 
 ## Data
 
 - Towns: `data/cities_clean.csv`, built from `MY.txt` in `eda.ipynb` (section 9).
   It keeps populated places (`feature_class == "P"`) with a recorded population, drops historical and abandoned places, removes duplicate coordinates, and adds the derived `state` and `region` columns.
-- Bases: five rows from `MY.txt`, chosen with the filters above.
+- Bases: six rows from `MY.txt`: three rural sites chosen with the filters above, and three existing airports.
 - Derived values: drop weight `w = 200 kg` per town, cargo `W₀ = w × k`, and the fuel needed per route `F₀_needed`.
 
 ## Parameters
@@ -233,7 +238,7 @@ Base coordinates in code use the full precision of `data/MY.txt`; the Bases tabl
 
 | Parameter | Meaning | Value / experiment |
 |---|---|---|
-| `base` | Start and end location | Five candidate sites; compared at `F = 20 t` |
+| `base` | Start and end location | Six candidate sites, three rural and three non-rural; compared at `F = 20 t` |
 | `F` | Fuel cap (tank size) | Swept from about 3 t to 20 t; default 21,100 kg |
 | `E` | Empty weight | Default 33,600 kg |
 | `C` | Maximum payload | Default 19,630 kg (98 drops) |
@@ -251,5 +256,5 @@ Base coordinates in code use the full precision of `data/MY.txt`; the Bases tabl
 - **One drop serves a whole town:** a 200 kg drop cannot feed a large town. Population is a priority score, not a count of people fed.
 - **Fuel model:** burn is linear in total mass. Wind, altitude changes, climb and descent are ignored.
 - **Straight-line flight:** no airspace restrictions or terrain avoidance.
-- **No recorded population:** GeoNames uses 0 for "not recorded", so the base sites are not truly empty. They are small villages or plantation land outside the town list.
+- **No recorded population:** GeoNames uses 0 for "not recorded", so the rural base sites are not truly empty. They are small villages or plantation land outside the town list.
 - **Aircraft constants** are approximate public figures for the C-130H.

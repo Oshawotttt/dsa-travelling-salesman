@@ -7,6 +7,7 @@ Deadline: Week 12 Sunday, 11pm, on eLearn.
 - [ ] Experiment scripts, one folder each under `experiments/` (see [EXPERIMENT.md](EXPERIMENT.md)).
 - [ ] Exact DP, to compare A and B with the optimal route.
 - [ ] Map plot of A's and B's routes, to check they look sensible.
+- [x] Non-rural starting base as well.
 
 ## Docs
 
