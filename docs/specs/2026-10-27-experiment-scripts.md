@@ -167,10 +167,15 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
   - Default `Params` (`F = 21,100 kg`), Perak base (user: "change everything to 21100"). Population thresholds 100,000 / 50,000 / 15,000 / 0, which give 86 / 148 / 358 / 745 towns with the current CSV (user: "yes"). For each threshold: one `a_heap` and one `a_scan` run (timed, best of 3, user). Mismatches come from a separate `greedy_insertion(inst, "heap", audit=True)` call and are stored in the `a_heap` row's `stats` as `mismatches`. Doc delta: via S2 (`docs/EXPERIMENT.md`).
   - Plot: two panels against `n_towns`: score evals per selector (log y), and mismatches ÷ insertions. Decision (user): "yes". `transient`.
 - **Acceptance criteria:**
-  - [ ] On a small hand-built town list and 2 thresholds, `run_experiment` writes contract-conforming outputs with one `a_heap` and one `a_scan` row per threshold, every row has `F == 21100`, and each `a_heap` row's `stats` has `mismatches`. `tests/test_experiments.py::test_e1`
-  - [ ] `plot` writes a non-empty `plot.png` from `runs.csv` alone (no other input). `tests/test_experiments.py::test_e1`
-  - [ ] `python -m experiments.e1_heap_vs_scan.run` exits 0 and writes `experiments/e1_heap_vs_scan/out/{runs.csv,routes.csv,plot.png}`.
+  - [x] On a small hand-built town list and 2 thresholds, `run_experiment` writes contract-conforming outputs with one `a_heap` and one `a_scan` row per threshold, every row has `F == 21100`, and each `a_heap` row's `stats` has `mismatches`. `tests/test_experiments.py::test_e1`
+  - [x] `plot` writes a non-empty `plot.png` from `runs.csv` alone (no other input). `tests/test_experiments.py::test_e1`
+  - [x] `python -m experiments.e1_heap_vs_scan.run` exits 0 and writes `experiments/e1_heap_vs_scan/out/{runs.csv,routes.csv,plot.png}`.
 - **Doc deltas:** `docs/EXPERIMENT.md`: the results table for experiment 1, added below the trial result.
+  - Decisions made during S3:
+    - `run_experiment(towns, out_dir, thresholds=(100_000, 50_000, 15_000, 0), base="perak", repeats=3)`: the grid keywords and their defaults are the spec's values, so the module entry point passes only towns and the output folder. Doc: `docs/EXPERIMENT.md` (experiment 1).
+    - The audit's `mismatches` is merged into the `a_heap` row with `dataclasses.replace(r, stats={**r.stats, "mismatches": m})`; the audit call is not timed. Doc: `docs/EXPERIMENT.md` (experiment 1).
+    - The module entry point finds `data/cities_clean.csv` and `out/` from the file's own path, not the working directory. Doc: `README.md` (Running the experiments).
+    - Plots use matplotlib's `Agg` backend, so they render without a display. Doc: `README.md` (Running the experiments).
 
 ### S4 Experiment 2: run time
 

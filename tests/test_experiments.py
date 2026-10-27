@@ -1,5 +1,6 @@
 import csv
 import random
+import shutil
 from dataclasses import fields
 
 import pytest
@@ -8,7 +9,8 @@ from airdrop.approach_a import greedy_insertion
 from airdrop.approach_b import local_search
 from airdrop.baseline import nearest_neighbour
 from airdrop.exact_dp import exact_dp
-from airdrop.model import Base, Instance, Params, Stop, Town, evaluate, trace
+from airdrop.model import BASES, Base, Instance, Params, Stop, Town, evaluate, trace
+from experiments.e1_heap_vs_scan import run as e1
 from experiments.common import ALGORITHMS, read_runs, run, solve, write_outputs
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
@@ -114,3 +116,44 @@ def test_read_runs(tmp_path):
     assert got[0]["F"] == 4_000.0 and got[0]["time_s"] == r0.time_s
     with open(tmp_path / "runs.csv", newline="", encoding="utf-8") as f:
         assert list(csv.DictReader(f))[0]["sample"] == ""
+
+
+def towns_near(base, seed, n):
+    """n towns within about 1 degree of a base, populations spread over 1,000..200,000."""
+    rng = random.Random(seed)
+    return [Town(i, f"t{i}", base.lat + rng.uniform(-1, 1), base.lon + rng.uniform(-1, 1),
+                 rng.randint(1_000, 200_000)) for i in range(1, n + 1)]
+
+
+def assert_conforms(out_dir):
+    """Both output files have the section 4 headers, and routes.csv has len(route) + 2 rows per run."""
+    assert header(out_dir / "runs.csv") == RUNS_HEADER
+    assert header(out_dir / "routes.csv") == ROUTES_HEADER
+    route_rows = rows(out_dir / "routes.csv")
+    runs = read_runs(out_dir / "runs.csv")
+    assert len({r["run_id"] for r in runs}) == len(runs)
+    for r in runs:
+        steps = [int(row["step"]) for row in route_rows if int(row["run_id"]) == r["run_id"]]
+        assert steps == list(range(r["towns_visited"] + 2))
+    return runs
+
+
+def assert_plot_from_csv_alone(plot, out_dir, tmp_path):
+    """plot works on a folder holding only runs.csv, and writes a non-empty plot.png."""
+    alone = tmp_path / "alone"
+    alone.mkdir()
+    shutil.copy(out_dir / "runs.csv", alone / "runs.csv")
+    plot(alone)
+    assert (alone / "plot.png").stat().st_size > 0
+
+
+def test_e1(tmp_path):
+    towns = towns_near(BASES["perak"], 1, 12)
+    thresholds = (100_000, 0)
+    e1.run_experiment(towns, tmp_path, thresholds=thresholds, repeats=1)
+    runs = assert_conforms(tmp_path)
+    assert sorted((r["n_towns"], r["algorithm"]) for r in runs) == sorted(
+        (sum(t.population >= thr for t in towns), name) for thr in thresholds for name in ("a_heap", "a_scan"))
+    assert all(r["F"] == 21_100 for r in runs)
+    assert all("mismatches" in r["stats"] for r in runs if r["algorithm"] == "a_heap")
+    assert_plot_from_csv_alone(e1.plot, tmp_path, tmp_path)
