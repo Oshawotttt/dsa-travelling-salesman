@@ -277,14 +277,11 @@ def trace(inst: Instance, route: Sequence[int]) -> list[Stop]:
         leg = inst.dist(prev, t)
         after = _fuel_after(inst, fuel, leg, cargo)
         distance += leg
-        if t:
-            town = inst.towns[t - 1]
-            place = (town.geonameid, town.name, town.lat, town.lon, town.population)
-        else:
-            place = (base.geonameid, base.name, base.lat, base.lon, 0)
-        reached += place[4]
-        stops.append(Stop(step, t, *place, leg, distance, fuel - after, after, cargo,
-                          p.E + cargo + after, reached))
+        place = inst.towns[t - 1] if t else base
+        population = inst.population(t)
+        reached += population
+        stops.append(Stop(step, t, place.geonameid, place.name, place.lat, place.lon, population,
+                          leg, distance, fuel - after, after, cargo, p.E + cargo + after, reached))
         prev, fuel = t, after
         if t:
             cargo -= p.w

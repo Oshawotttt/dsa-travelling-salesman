@@ -193,10 +193,12 @@ def test_trace_errors():
 
 
 def feasible_routes(seed, params):
-    """A few random routes of 1..8 towns on an 8-town instance, with their instance."""
+    """A few random feasible routes of 1..8 towns on an 8-town instance, with their instance."""
     inst = random_instance(seed, params=params)
     rng = random.Random(seed)
-    return inst, [rng.sample(range(1, inst.n + 1), rng.randint(1, inst.n)) for _ in range(4)]
+    routes = [rng.sample(range(1, inst.n + 1), rng.randint(1, inst.n)) for _ in range(4)]
+    assert all(evaluate(inst, route).feasible for route in routes)
+    return inst, routes
 
 
 def test_trace_endpoints():
@@ -249,13 +251,13 @@ def test_trace_matches_fuel_end():
             assert stops[-1].fuel_kg == pytest.approx(fuel_end(inst, route, F0), rel=1e-9)
             arrivals = simulate_stops(inst, route, F0)
             for s, fuel in zip(stops[1:], arrivals):
-                assert s.fuel_kg == pytest.approx(fuel, abs=0.1)
+                assert s.fuel_kg == pytest.approx(fuel, abs=0.01)
 
 
 def test_trace_invariants():
-    p = Params()
-    for params in (p, control_params(p)):
+    for params in (Params(), control_params(Params())):
         inst, routes = feasible_routes(8, params)
+        p = inst.params
         for route in routes:
             stops = trace(inst, route)
             for prev, s in zip(stops, stops[1:]):
