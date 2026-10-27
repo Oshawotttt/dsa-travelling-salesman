@@ -169,6 +169,52 @@ def trace(inst: Instance, route: Sequence[int]) -> list[Stop]
 - Fuel on a leg of length `d` with cargo `W`: `fuel_after = f + (f + W)·expm1(-b·d) + a·expm1(-b·d)/b` (`f - a·d` at `b = 0`).
 - Takeoff and landing stops carry the base's `geonameid`, `name`, `lat`, `lon`.
 
+## Map plots
+
+```python
+# airdrop/plot.py
+THEME: dict[str, str] = {            # slide body: one slate family, light
+    "background": "#F4F6F8",         # legend box
+    "text": "#1F2A36",               # legend text, base marker
+    "towns": "#A9B4C2",              # unvisited towns
+}
+ROUTE_COLORS: dict[str, str] = {     # Paul Tol "vibrant", in this order
+    "NN": "#EE7733",
+    "A": "#0077BB",
+    "B": "#EE3377",
+    "B on A": "#33BBEE",
+    "DP": "#009988",
+}
+
+@dataclass(frozen=True)
+class RouteLayer:
+    label: str
+    color: str                       # hex, from colors / ROUTE_COLORS
+    stops: tuple[Stop, ...]          # trace(inst, route): takeoff, drops, landing
+
+def route_layers(inst: Instance, routes: Mapping[str, Sequence[int]],
+                 colors: Mapping[str, str] | None = None) -> list[RouteLayer]
+
+def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: str | Path,
+                     title: str | None = None,
+                     colors: Mapping[str, str] | None = None,
+                     theme: Mapping[str, str] | None = None) -> Path
+```
+
+- `airdrop.plot` is imported on its own (`from airdrop.plot import ...`) and is not re-exported from `airdrop`, so `import airdrop` never needs `folium`.
+- `routes` maps a label (e.g. `"A"`, `"B"`) to a route in the [route format](#routes-and-indices) (town indices, base left out); pass `{"A": result.route}` from any `SolveResult`. Geometry comes from `trace`. One map holds 1 to 5 routes.
+- An empty `routes` raises `ValueError("at least 1 route per map, got 0")`; more than 5 raises `ValueError`. The limit is checked before any route is traced.
+- Route colour: `colors[label]` if the label is a key of `colors` (even with a falsy value such as `""`), else `ROUTE_COLORS[label]`, else the first `ROUTE_COLORS` value (in `ROUTE_COLORS` order) not already used on that map. Colours resolve in two passes (known labels first, then unknown labels in route order), so an unknown label listed before a known one never takes the known label's colour. "Already used" compares colours case-insensitively.
+- `theme` keys override `THEME` keys; missing keys fall back to `THEME`.
+- `route_layers` keeps the order of `routes`. A route that `trace` rejects (bad index, infinite fuel) raises `ValueError(f"route {label!r}: <trace message>")`, chained from the `trace` error.
+- An empty route `[]` gives a layer of two stops (takeoff and landing at the base) and draws no legs.
+- `plot_routes_html` creates parent directories, writes the HTML file, and returns the resolved path.
+- Map content: tiles are CartoDB Positron (`tiles="CartoDB positron"`, attribution kept); the map opens centred on the base at zoom 7. Every town in the instance is a small circle marker in the `towns` colour, with no tooltip. Each route is its own `folium.FeatureGroup` named by its label. Its legs are straight lat/lon polylines between stops (not great-circle arcs), and its visited towns are larger circle markers in the route colour. The base is the largest circle marker, in the `text` colour, with a tooltip naming it.
+- Each visited town's tooltip shows route label, step number, name, population, fuel on arrival (kg), cargo on arrival (kg) and `lat, lon` to 4 decimals, from `trace`. There are no permanent town labels.
+- `LayerControl` sits top left, expanded, and lists the route layers as overlays; the Positron tile layer is its only base layer. Town and base markers are added to the map directly and cannot be toggled.
+- A fixed legend box (top right) lists each route label with its colour swatch, and the title if given, on the `background` colour with `text` colour text.
+- Labels, names and the title are HTML-escaped (with `` ` `` and `$` also escaped) before going into tooltips, layer names and the legend.
+
 ## Route state
 
 ```python

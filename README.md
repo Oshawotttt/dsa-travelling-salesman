@@ -16,6 +16,7 @@ airdrop/             Python package
   baseline.py        nearest neighbour with a fuel cutoff (Approach B's starting route)
   approach_b.py      Approach B: best-improvement local search (2-opt, add, swap, replace 1 with 2)
   exact_dp.py        exact backward subset DP for small instances (up to 15 towns)
+  plot.py            interactive HTML map of labelled routes (folium); imported on its own, not from airdrop
 experiments/         experiment scripts: common.py (shared runner and CSV output), e1_ to e4_ folders each with run.py and out/
 tests/               pytest suite, one file per module
 data/                town data, not in git (see Data below)
@@ -27,11 +28,12 @@ docs/
   TODO.md            open work
   specs/             task specs
 eda.ipynb            data exploration and cleaning; writes data/cities_clean.csv
-requirements.txt     dependencies (numpy, pytest, matplotlib)
+requirements.txt     dependencies (folium, matplotlib, numpy, pytest)
 pyproject.toml       pytest configuration
 ```
 
 Implemented: nearest neighbour, Approach A (heap and re-scan), Approach B and the exact DP.
+Also implemented: the interactive HTML route map.
 Experiments 1-4 are implemented, with their outputs committed (see Running the experiments).
 Wind, climb, descent and airspace are not modelled.
 
@@ -107,6 +109,25 @@ best = exact_dp(small)                      # optimal route; raises ValueError a
 Every solver returns a `SolveResult` with `route`, `eval` (a `RouteEval`) and `stats` (counters for the run).
 To evaluate any route yourself, use `airdrop.evaluate(inst, route)`.
 [docs/CONTRACTS.md](docs/CONTRACTS.md) has the full signatures, fields, stats and errors.
+
+## Plotting routes
+
+`airdrop.plot` writes a zoomable folium map of Malaysia as an `.html` file, with one toggleable layer per route.
+It is called from Python only: there is no command-line entry point, no PNG output, and no experiment script.
+
+```python
+from airdrop.plot import plot_routes_html
+
+plot_routes_html(inst, {"A": a.route, "B": b.route}, "out/route.html", title="Perak base")
+```
+
+- One map holds 1 to 5 routes. Default colours: NN `#EE7733`, A `#0077BB`, B `#EE3377`, B on A `#33BBEE`, DP `#009988`; legend box `#F4F6F8` with `#1F2A36` text; unvisited towns `#A9B4C2`. Override with the `colors` and `theme` arguments.
+- Hover a visited town for its route, step, name, population, fuel and cargo.
+- The map needs internet every time it is opened: the CartoDB Positron tiles are fetched live and are not cached or bundled offline.
+- Tile caveat: folium warns `CartoDB tiles now require an API key`. The tile URL it writes has no key and still served tiles on 2026-10-27; access may stop working later.
+- The HTML file can be embedded in slides with an `<iframe>`.
+- The map needs only `folium`; it does not use `matplotlib` (used by the experiment plots) or `contextily`.
+- [docs/CONTRACTS.md](docs/CONTRACTS.md) (Map plots) has the signatures and behaviour.
 
 Run time: on all 745 towns from the Perak base, `greedy_insertion` takes a few seconds and `local_search` about a minute (127 rounds).
 Lower `L` to speed up local search.
