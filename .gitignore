@@ -1,3 +1,7 @@
 # Dataset (too large / provided separately)
 data/
 
+
+# Python bytecode
+__pycache__/
+*.pyc
