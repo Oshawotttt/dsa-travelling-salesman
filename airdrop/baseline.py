@@ -1,4 +1,4 @@
-"""Nearest neighbour with a fuel cutoff (PROBLEM.md, Baseline): Approach B's starting route."""
+"""Nearest neighbour with a fuel cutoff (docs/PROBLEM.md, Baseline): Approach B's starting route."""
 from __future__ import annotations
 
 from airdrop.approach_a import SolveResult

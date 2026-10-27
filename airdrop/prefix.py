@@ -1,4 +1,4 @@
-"""Prefix sums over one route, so insertion, removal and 2-opt costs are O(1) (PROBLEM.md, Approach B).
+"""Prefix sums over one route, so insertion, removal and 2-opt costs are O(1) (docs/PROBLEM.md, Approach B).
 
 Nodes are v_0 = base, v_1..v_k = the towns, v_(k+1) = base, and S_m is the distance flown
 from the base to v_m. The fuel needed depends only on D = S_(k+1) and on sum(phi(S_m)) over

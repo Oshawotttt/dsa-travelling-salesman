@@ -1,4 +1,4 @@
-"""Approach A: greedy insertion by population / marginal fuel (PROBLEM.md, Approach A)."""
+"""Approach A: greedy insertion by population / marginal fuel (docs/PROBLEM.md, Approach A)."""
 from __future__ import annotations
 
 import heapq
