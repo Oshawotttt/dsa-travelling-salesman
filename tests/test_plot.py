@@ -15,6 +15,15 @@ def instance():
     return Instance(BASE, TOWNS, Params())
 
 
+def colors_of(layers):
+    return {layer.label: layer.color for layer in layers}
+
+
+def html_of(tmp_path, routes, **kwargs):
+    path = plot_routes_html(instance(), routes, tmp_path / "route.html", **kwargs)
+    return path.read_text(encoding="utf-8")
+
+
 def test_layers_follow_routes_in_order():
     inst = instance()
     routes = {"B": [3, 1], "A": [2]}
@@ -39,8 +48,15 @@ def test_bad_index_names_label():
         route_layers(instance(), {"A": [1], "Bad Route": [1, 9]})
 
 
-def colors_of(layers):
-    return {layer.label: layer.color for layer in layers}
+def test_infinite_fuel_names_label():
+    inst = Instance(BASE, TOWNS, Params(c=100.0))
+    with pytest.raises(ValueError, match="Far Route"):
+        route_layers(inst, {"Far Route": [1, 2, 3]})
+
+
+def test_no_routes_raises():
+    with pytest.raises(ValueError, match="at least 1 route"):
+        route_layers(instance(), {})
 
 
 def test_default_colors_by_label():
@@ -60,7 +76,7 @@ def test_unknown_label_takes_first_unused_color():
 
 def test_more_than_five_routes_raises():
     routes = {f"r{i}": [1] for i in range(6)}
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="at most 5 routes"):
         route_layers(instance(), routes)
 
 
@@ -76,11 +92,6 @@ def test_html_creates_file_and_parent_dir(tmp_path):
     result = plot_routes_html(instance(), {"A": [1, 2]}, path)
     assert result == path.resolve()
     assert path.is_file()
-
-
-def html_of(tmp_path, routes, **kwargs):
-    path = plot_routes_html(instance(), routes, tmp_path / "route.html", **kwargs)
-    return path.read_text(encoding="utf-8")
 
 
 def test_html_names_routes_base_and_visited_towns(tmp_path):
@@ -112,3 +123,9 @@ def test_empty_route_and_shared_towns_render(tmp_path):
     html = html_of(tmp_path, {"A": [], "B": [1, 2], "B on A": [2, 1, 3]}, title="Shared")
     for text in ["B on A", "Shared", "Alpha"]:
         assert text in html
+
+
+def test_unvisited_towns_have_no_tooltip(tmp_path):
+    html = html_of(tmp_path, {"A": [1]})
+    assert "Alpha" in html
+    assert "Bravo" not in html and "Charlie" not in html

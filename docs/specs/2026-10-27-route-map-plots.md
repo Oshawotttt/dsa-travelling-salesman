@@ -112,6 +112,7 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
   - `README.md`: `requirements.txt` line in the folder tree lists `folium`; `plot.py` added to the tree.
   - Decision made: colours resolve in two passes: first `colors[label]` or `ROUTE_COLORS[label]` for every label, then unknown labels take the unused `ROUTE_COLORS` values in route order. Why: an unknown label listed before a known one (e.g. `{"x": ..., "NN": ...}`) would otherwise take the known label's colour and two routes would share it. `docs/CONTRACTS.md` (Map plots).
   - Decision made: a route `trace` rejects raises `ValueError("route '<label>': <trace message>")`, chained from the `trace` error. Why: the spec asks for the label; keeping `trace`'s message keeps the cause. `docs/CONTRACTS.md` (Map plots).
+  - Decision made (code review): an empty `routes` mapping raises `ValueError("at least 1 route per map, got 0")`, from `route_layers` and so from `plot_routes_html`. Why: Interfaces says "One map holds 1 to 5 routes"; without it an empty map with an empty legend was written. `docs/CONTRACTS.md` (Map plots).
   - Decision made: the 5-route limit is checked before any route is traced. Why: fails fast without tracing. Needs no doc beyond the limit itself.
 
 ### S2 Interactive HTML map (folium)
@@ -141,6 +142,7 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
   - `docs/CONTRACTS.md` "Map plots": `plot_routes_html` signature and behaviour.
   - `README.md` "Plotting routes": HTML example; caveat that the HTML needs internet every time it is opened; it can be embedded in slides with an `<iframe>`.
   - Decision made: each visited town's tooltip also shows its `lat, lon` to 4 decimals. Why: the acceptance criterion asks for 4-decimal coordinates in the HTML, and folium writes floats in shortest form (`4.6`), so only formatted text guarantees them; it also helps the human location check. `docs/CONTRACTS.md` (Map plots, tooltip contents).
+  - Decision made (code review): unvisited-town markers carry no tooltip; only visited towns (route tooltip) and the base have one. Why: the spec gives tooltips to visited towns only, and 745 extra tooltips bloat the HTML. `docs/CONTRACTS.md` (Map plots).
   - Decision made: the `LayerControl` sits top left, expanded, and lists only the route layers; town and base markers are added to the map directly, not toggleable. Why: the legend takes the top right, and a towns toggle is not in the spec. `docs/CONTRACTS.md` (Map plots).
   - Decision made: the map opens centred on the base at zoom 7. Why: the spec names no start view; zoom 7 shows the peninsula or one Borneo state. `docs/CONTRACTS.md` (Map plots).
   - Decision made: labels, names and the title are HTML-escaped before going into tooltips, layer names and the legend. Why: town names contain apostrophes and route labels are caller text. Needs no doc: no behaviour a caller sees changes.
