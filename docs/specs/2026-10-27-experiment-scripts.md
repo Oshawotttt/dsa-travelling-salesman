@@ -111,14 +111,19 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
   - `"a_heap"` is `greedy_insertion(inst, "heap")`, `"a_scan"` is `greedy_insertion(inst, "scan")`, `"nn"` is `nearest_neighbour(inst)`, `"b"` is `local_search(inst)`, `"b_on_a"` is `local_search(inst, initial=a_route)`, `"dp"` is `exact_dp(inst)`. Doc delta: `docs/CONTRACTS.md`.
   - `matplotlib` in `requirements.txt`, no pandas: CSV via the `csv` module. Decision (user): "yes". Doc delta: `README.md`.
 - **Acceptance criteria:**
-  - [ ] On a small hand-built instance, `solve` for each name in `ALGORITHMS` returns the same route as the direct solver call. An unknown name, and `"b_on_a"` without `a_route`, raise `ValueError`. `tests/test_experiments.py::test_solve_dispatch`
-  - [ ] `write_outputs` writes `runs.csv` and `routes.csv` with exactly the section 4 headers, in order. `tests/test_experiments.py::test_output_headers`
-  - [ ] Each run has `len(route) + 2` rows in `routes.csv`, in `step` order, equal to `trace(inst, route)` field by field. The `runs.csv` values `population`, `distance_km`, `fuel_needed_kg` and `feasible` equal `evaluate(inst, route)`. `tests/test_experiments.py::test_outputs_match_trace`
-  - [ ] `read_runs` round-trips `stats` (JSON) and `sample` (empty for `None`). `tests/test_experiments.py::test_read_runs`
-  - [ ] Full suite passes: `python -m pytest`.
+  - [x] On a small hand-built instance, `solve` for each name in `ALGORITHMS` returns the same route as the direct solver call. An unknown name, and `"b_on_a"` without `a_route`, raise `ValueError`. `tests/test_experiments.py::test_solve_dispatch`
+  - [x] `write_outputs` writes `runs.csv` and `routes.csv` with exactly the section 4 headers, in order. `tests/test_experiments.py::test_output_headers`
+  - [x] Each run has `len(route) + 2` rows in `routes.csv`, in `step` order, equal to `trace(inst, route)` field by field. The `runs.csv` values `population`, `distance_km`, `fuel_needed_kg` and `feasible` equal `evaluate(inst, route)`. `tests/test_experiments.py::test_outputs_match_trace`
+  - [x] `read_runs` round-trips `stats` (JSON) and `sample` (empty for `None`). `tests/test_experiments.py::test_read_runs`
+  - [x] Full suite passes: `python -m pytest`.
 - **Doc deltas:**
   - `docs/CONTRACTS.md`: new "Experiment output" section (section 4), including the algorithm names and what each one calls.
   - `README.md`: folder structure line for `experiments/`; a "Running the experiments" section; matplotlib in the dependencies line.
+  - Decisions made during S1:
+    - `read_runs` also casts the numeric columns (`run_id`, `n_towns`, `F`, `population`, `towns_visited`, `distance_km`, `fuel_needed_kg`, `time_s`) to `int`/`float` and `feasible` to `bool`, so plots need no casting. Doc: `docs/CONTRACTS.md` (Experiment output).
+    - The CSV columns are derived from the `Run` and `Stop` dataclass fields (`routes.csv` is the 4 key columns then every `Stop` field), so the files cannot drift from the dataclasses. Doc: `docs/CONTRACTS.md`.
+    - `routes.csv` rows follow the order of `runs`, then `step`. Doc: `docs/CONTRACTS.md`.
+    - With `repeats > 1`, `run` returns the last call's `SolveResult` (the solvers are deterministic) and `time_s` is the minimum. Doc: `docs/CONTRACTS.md` (`time_s`).
 
 ### S2 Fixed fuel cap in the experiment plan (docs only)
 
