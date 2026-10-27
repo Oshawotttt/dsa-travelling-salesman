@@ -21,6 +21,60 @@ Experiment 4's two fuel caps are each the same for all 10 samples, and each is a
 
 The samples are drawn from Peninsular towns only, so all 12 towns of a sample are within reach of the Perak base at these fuel caps (see [DECISIONS.md](DECISIONS.md), "No fuel sweep").
 
+## Running
+
+`python -m experiments.eN_<name>.run` from the repo root. It writes `runs.csv`, `routes.csv` and `plot.png` to `experiments/eN_<name>/out/`, which are committed. Output format: [CONTRACTS.md](CONTRACTS.md#experiment-output).
+
+- Experiments 1 and 2 time each solver call best of 3; experiments 3 and 4 run once. Timing covers the solver call only.
+- Experiment 3 runs `nn`, `a_heap`, `b`, `b_on_a` in that order for each base, with `b_on_a` seeded by the `a_heap` route of the same base. The region pairing (`perak`/`klia` Peninsula, `sarawak`/`kuching` Sarawak, `sabah`/`kota_kinabalu` Sabah) is `REGIONS` in `e3_bases/run.py`.
+- Experiment 4 draws `random.Random(seed).sample(pool, 12)` for seeds 0-9 from the Peninsular towns (`region` column of the CSV). It runs `F_full` first, then `F_tight`; for each sample `dp`, `nn`, `a_heap`, `b`, `b_on_a`, with `b_on_a` seeded by that sample's `a_heap` route at the same `F`. Gap = heuristic population / optimal population.
+
+## Results
+
+Population thresholds 100,000 / 50,000 / 15,000 / 0 give 86 / 148 / 358 / 745 towns (the 83 / 144 / 355 of earlier notes came from an older cleaning). All at `F = 21,100 kg`, Perak base, except experiment 4.
+
+**Experiment 1** (score evals; mismatches are heap picks that differ from the re-scan):
+
+| Towns | Heap evals | Scan evals | Mismatches |
+|---|---|---|---|
+| 86 | 172 | 3,725 | 72 of 81 |
+| 148 | 296 | 9,751 | 91 of 98 |
+| 358 | 716 | 30,591 | 93 of 98 |
+| 745 | 1,490 | 68,904 | 93 of 98 |
+
+**Experiment 2** (best of 3, seconds):
+
+| Towns | NN | A heap | A scan | B |
+|---|---|---|---|---|
+| 86 | 0.004 | 0.01 | 0.20 | 1.2 |
+| 148 | 0.006 | 0.013 | 0.49 | 11.3 |
+| 358 | 0.019 | 0.041 | 1.97 | 33.6 |
+| 745 | 0.074 | 0.142 | 4.20 | 94.1 |
+
+The full run takes about 8.5 minutes, almost all of it B on 358 and 745 towns timed 3 times.
+
+**Experiment 3** (population, millions; the full run takes about 8.5 minutes, mostly B at 30-115 s per base):
+
+| Base | NN | A | B | B on A |
+|---|---|---|---|---|
+| perak | 3.31 | 25.38 | 27.58 | 27.10 |
+| klia | 4.60 | 24.02 | 27.35 | 27.02 |
+| sarawak | 3.94 | 24.97 | 4.41 | 27.28 |
+| kuching | 3.78 | 25.05 | 4.41 | 27.51 |
+| sabah | 3.97 | 22.58 | 4.41 | 27.04 |
+| kota_kinabalu | 3.97 | 23.34 | 4.41 | 27.13 |
+
+From the East Malaysian bases, B started from the NN route stays at 4.41 M, while B on A reaches 27 M.
+
+**Experiment 4** (gap to the DP, average / worst over the 10 samples):
+
+| `F` | Value | DP towns per sample | Coverage | NN | A | B | B on A |
+|---|---|---|---|---|---|---|---|
+| `F_full` | 5,640 kg | 12 in 8 samples, 11 in 2 | 98.3% | 0.963 / 0.656 | 0.998 / 0.995 | 0.999 / 0.996 | 0.999 / 0.996 |
+| `F_tight` | 4,890 kg | 7-11 (96 of 120) | 80.0% | 0.742 / 0.236 | 0.997 / 0.970 | 0.916 / 0.497 | 0.997 / 0.970 |
+
+`F_tight` is 4,890 kg, not the 4,900 kg of the planning estimate: `0.8 * 12` is `9.600000000000001` in floating point, so `coverage_F` compares the town totals with a `1e-9` tolerance. The plot writes the average and worst gap under each algorithm in each panel.
+
 ## Trial result for experiment 1
 
 A trial run with a varied `F`, before the fuel cap was fixed at 21,100 kg. Kept as history.

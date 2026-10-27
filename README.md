@@ -16,6 +16,7 @@ airdrop/             Python package
   baseline.py        nearest neighbour with a fuel cutoff (Approach B's starting route)
   approach_b.py      Approach B: best-improvement local search (2-opt, add, swap, replace 1 with 2)
   exact_dp.py        exact backward subset DP for small instances (up to 15 towns)
+experiments/         experiment scripts: common.py (shared runner and CSV output), e1_ to e4_ folders each with run.py and out/
 tests/               pytest suite, one file per module
 data/                town data, not in git (see Data below)
 docs/
@@ -26,12 +27,12 @@ docs/
   TODO.md            open work
   specs/             task specs
 eda.ipynb            data exploration and cleaning; writes data/cities_clean.csv
-requirements.txt     dependencies (numpy, pytest)
+requirements.txt     dependencies (numpy, pytest, matplotlib)
 pyproject.toml       pytest configuration
 ```
 
 Implemented: nearest neighbour, Approach A (heap and re-scan), Approach B and the exact DP.
-Not implemented: the experiment scripts and plots.
+Experiments 1-4 are implemented, with their outputs committed (see Running the experiments).
 Wind, climb, descent and airspace are not modelled.
 
 ## Setup
@@ -55,6 +56,19 @@ From the repo root:
 python -m pytest                       # full suite
 python -m pytest tests/test_model.py   # one file
 ```
+
+## Running the experiments
+
+From the repo root, after `pip install -r requirements.txt` and with `data/cities_clean.csv` in place:
+
+```
+python -m experiments.e1_heap_vs_scan.run
+python -m experiments.e2_run_time.run         # about 8.5 minutes, mostly Approach B
+python -m experiments.e3_bases.run            # about 8.5 minutes, mostly Approach B
+python -m experiments.e4_optimality_gap.run
+```
+
+Each writes `runs.csv`, `routes.csv` and `plot.png` to `experiments/<folder>/out/`; these files are committed. The scripts find `data/cities_clean.csv` and `out/` from their own path, so the working directory does not matter for them. Plots use matplotlib's `Agg` backend, so they render without a display, and are drawn from `runs.csv` only. The CSV format is in [docs/CONTRACTS.md](docs/CONTRACTS.md#experiment-output); the plan and results are in [docs/EXPERIMENT.md](docs/EXPERIMENT.md). CSVs are read and written with the `csv` module; there is no pandas.
 
 ## Using the solvers
 

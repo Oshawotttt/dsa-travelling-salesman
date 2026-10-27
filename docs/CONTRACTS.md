@@ -185,3 +185,89 @@ class RouteState:
 ```
 
 - Each method returns the fuel needed by the route after the move, without applying it.
+
+## Experiment output
+
+```python
+# experiments/common.py
+ALGORITHMS = ("nn", "a_heap", "a_scan", "b", "b_on_a", "dp")
+
+@dataclass(frozen=True)
+class Run:
+    experiment: str          # folder name, e.g. "e3_bases"
+    run_id: int              # 0, 1, ... within one experiment output
+    algorithm: str           # one of ALGORITHMS
+    base: str                # key in BASES
+    n_towns: int             # inst.n
+    sample: int | None       # random seed of the town sample (experiment 4), else None
+    F: float                 # fuel cap used
+    population: int
+    towns_visited: int       # len(route)
+    distance_km: float
+    fuel_needed_kg: float
+    feasible: bool
+    time_s: float            # solver wall-clock, best of repeats
+    stats: dict[str, int]    # SolveResult.stats
+
+def solve(inst: Instance, algorithm: str, a_route: Sequence[int] | None = None) -> SolveResult
+def run(experiment: str, run_id: int, inst: Instance, base: str, algorithm: str,
+        sample: int | None = None, repeats: int = 1,
+        a_route: Sequence[int] | None = None) -> tuple[Run, list[Stop], SolveResult]
+def write_outputs(out_dir: Path, runs: Sequence[Run], stops: Mapping[int, Sequence[Stop]]) -> None
+def read_runs(path: Path) -> list[dict]
+```
+
+Every solver run in every experiment goes through `run()`, and every plot is drawn only from the CSV files, never from in-memory results. The map plot of routes reads `routes.csv`.
+
+Algorithm names:
+
+| Name | Calls |
+|---|---|
+| `nn` | `nearest_neighbour(inst)` |
+| `a_heap` | `greedy_insertion(inst, "heap")` |
+| `a_scan` | `greedy_insertion(inst, "scan")` |
+| `b` | `local_search(inst)` |
+| `b_on_a` | `local_search(inst, initial=a_route)` |
+| `dp` | `exact_dp(inst)` |
+
+- `solve` raises `ValueError` for an unknown algorithm, and for `"b_on_a"` without `a_route`. `run` raises `ValueError` when `repeats < 1`.
+- `time_s` is wall-clock `time.perf_counter()` around the solver call only (not `trace`, not CSV writing). With `repeats > 1` it is the minimum, and `run` returns the last call's `SolveResult` (the solvers are deterministic). Experiments 1 and 2 use 3 repeats, the others 1.
+
+`runs.csv` columns, in this order:
+`experiment, run_id, algorithm, base, n_towns, sample, F, population, towns_visited, distance_km, fuel_needed_kg, feasible, time_s, stats`
+- `sample` is empty when `None`; `feasible` is `True`/`False`; `stats` is a JSON object string.
+- One row per run, in `run_id` order.
+
+`routes.csv` columns, in this order:
+`experiment, run_id, algorithm, base, step, index, geonameid, name, lat, lon, population, leg_km, distance_km, leg_fuel_kg, fuel_kg, cargo_kg, weight_kg, population_reached`
+- One row per `Stop` of `trace(inst, route)`: `len(route) + 2` rows per run, in `step` order. Rows follow the order of `runs`, then `step`.
+- Joins to `runs.csv` on `(experiment, run_id)`.
+- The columns of both files are derived from the `Run` and `Stop` dataclass fields (`routes.csv` is the 4 key columns then every `Stop` field), so the files cannot drift from the dataclasses.
+
+`read_runs` returns one dict per row with typed values: `run_id`, `n_towns`, `population`, `towns_visited` as `int`; `F`, `distance_km`, `fuel_needed_kg`, `time_s` as `float`; `feasible` as `bool`; `sample` as `None` when empty, else `int`; `stats` parsed from JSON. Plots need no casting.
+
+Each experiment folder `experiments/eN_<name>/` has `run.py` with:
+
+```python
+def run_experiment(towns: Sequence[Town], out_dir: Path, **grid) -> None   # writes runs.csv, routes.csv
+def plot(out_dir: Path) -> None                                           # reads out_dir/runs.csv only, writes plot.png
+```
+
+Grid keywords and defaults (the module entry point passes only the towns and the output folder):
+
+| Experiment | `run_experiment` signature |
+|---|---|
+| `e1_heap_vs_scan`, `e2_run_time` | `(towns, out_dir, thresholds=(100_000, 50_000, 15_000, 0), base="perak", repeats=3)` |
+| `e3_bases` | `(towns, out_dir, bases=tuple(BASES))` |
+| `e4_optimality_gap` | `(towns, out_dir, seeds=range(10), sample_size=12, base="perak", min_samples=8, share=0.8)` |
+
+`experiments/e4_optimality_gap/run.py` also exposes:
+
+```python
+def full_fit_F(samples: Sequence[Sequence[Town]], base: Base, min_samples: int = 8) -> float
+def coverage_F(samples: Sequence[Sequence[Town]], base: Base, share: float = 0.8) -> float
+def peninsular_towns(path: Path) -> list[Town]   # towns whose CSV `region` is Peninsular
+```
+
+- Both `F` functions return a multiple of 10 kg in `[R, 21,100]`, found by binary search that assumes the rule is false below the answer and true above it. They raise `ValueError` when the rule fails at 21,100 kg.
+- `full_fit_F`: the DP route visits every town in at least `min_samples` samples. `coverage_F`: the mean DP route length is at least `share` of the sample size (compared with a `1e-9` tolerance on the totals).
