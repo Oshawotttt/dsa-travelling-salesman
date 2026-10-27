@@ -108,9 +108,9 @@ def test_html_has_visited_town_coordinates(tmp_path):
         assert lat in html and lon in html
 
 
-def test_html_uses_osm_route_colors_and_theme(tmp_path):
+def test_html_uses_english_tiles_route_colors_and_theme(tmp_path):
     html = html_of(tmp_path, {"A": [1], "mine": [2]}, colors={"A": "#123456"})
-    for text in ["tile.openstreetmap.org", "#123456", "#EE7733", THEME["background"], THEME["text"]]:
+    for text in ["maps.wikimedia.org/osm-intl", "lang=en", "#123456", "#EE7733", THEME["background"], THEME["text"]]:
         assert text.lower() in html.lower()
 
 

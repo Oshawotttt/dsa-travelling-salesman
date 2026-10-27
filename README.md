@@ -136,8 +136,8 @@ plot_routes_html(inst, {"A": a.route, "B": b.route}, "out/route.html", title="Pe
 
 - One map holds 1 to 5 routes. Default colours: NN `#EE7733`, A `#0077BB`, B `#EE3377`, B on A `#33BBEE`, DP `#009988`; legend box `#F4F6F8` with `#1F2A36` text; unvisited towns `#A9B4C2`. Override with the `colors` and `theme` arguments.
 - Hover a visited town for its route, step, name, population, fuel and cargo.
-- The map needs internet every time it is opened: the OpenStreetMap tiles are fetched live and are not cached or bundled offline.
-- Tiles: CartoDB Positron (used until 2026-10-27) now shows an "API KEY REQUIRED" placeholder instead of the map, so the maps use the keyless OpenStreetMap tiles.
+- The map needs internet every time it is opened: the Wikimedia tiles (OpenStreetMap data, English labels) are fetched live and are not cached or bundled offline.
+- Tiles: CartoDB Positron (used until 2026-10-27) now shows an "API KEY REQUIRED" placeholder instead of the map, and Esri returns 403, so the maps use the keyless Wikimedia tiles with `lang=en`. Wikimedia's terms are aimed at Wikimedia projects, so access may stop working later; the standard OpenStreetMap tiles also work but label places in local scripts.
 - The HTML file can be embedded in slides with an `<iframe>`.
 - The map needs only `folium`; it does not use `matplotlib` (used by the experiment plots) or `contextily`.
 - [docs/CONTRACTS.md](docs/CONTRACTS.md) (Map plots) has the signatures and behaviour.
