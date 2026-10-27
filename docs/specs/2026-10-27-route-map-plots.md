@@ -101,15 +101,18 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
   - `requirements.txt` gains `folium` only; `matplotlib` and `contextily` are not added (user: "okay to all"). Doc delta (README).
   - `airdrop/__init__.py` does not import `airdrop.plot`, so `import airdrop` never needs folium (code: `airdrop/__init__.py` exports only model names). Doc delta (CONTRACTS.md).
 - **Acceptance criteria:**
-  - [ ] `route_layers` on a hand-built instance returns one layer per label in input order, each with `len(route) + 2` stops whose `index` sequence is `[0, *route, 0]` and whose `lat`/`lon` equal the base's and towns' (test in `tests/test_plot.py`).
-  - [ ] Empty route gives a layer with two base stops (test).
-  - [ ] Bad index raises `ValueError` whose message contains the label (test).
-  - [ ] Colours: labels `"A"`, `"B"` get `#0077BB`, `#EE3377`; `colors={"A": "#123456"}` overrides A; an unknown label next to `"A"` gets `#EE7733` (first unused); 6 routes raise `ValueError` (tests).
-  - [ ] `python -c "import airdrop, sys; assert 'folium' not in sys.modules"` exits 0.
-  - [ ] `python -m pytest` passes.
+  - [x] `route_layers` on a hand-built instance returns one layer per label in input order, each with `len(route) + 2` stops whose `index` sequence is `[0, *route, 0]` and whose `lat`/`lon` equal the base's and towns' (test in `tests/test_plot.py`).
+  - [x] Empty route gives a layer with two base stops (test).
+  - [x] Bad index raises `ValueError` whose message contains the label (test).
+  - [x] Colours: labels `"A"`, `"B"` get `#0077BB`, `#EE3377`; `colors={"A": "#123456"}` overrides A; an unknown label next to `"A"` gets `#EE7733` (first unused); 6 routes raise `ValueError` (tests).
+  - [x] `python -c "import airdrop, sys; assert 'folium' not in sys.modules"` exits 0.
+  - [x] `python -m pytest` passes.
 - **Doc deltas:**
   - `docs/CONTRACTS.md`: new "Map plots" section with `THEME`, `ROUTE_COLORS`, `RouteLayer`, `route_layers` and the bullets under Interfaces; note that `airdrop.plot` is imported on its own and is not re-exported from `airdrop`.
   - `README.md`: `requirements.txt` line in the folder tree lists `folium`; `plot.py` added to the tree.
+  - Decision made: colours resolve in two passes: first `colors[label]` or `ROUTE_COLORS[label]` for every label, then unknown labels take the unused `ROUTE_COLORS` values in route order. Why: an unknown label listed before a known one (e.g. `{"x": ..., "NN": ...}`) would otherwise take the known label's colour and two routes would share it. `docs/CONTRACTS.md` (Map plots).
+  - Decision made: a route `trace` rejects raises `ValueError("route '<label>': <trace message>")`, chained from the `trace` error. Why: the spec asks for the label; keeping `trace`'s message keeps the cause. `docs/CONTRACTS.md` (Map plots).
+  - Decision made: the 5-route limit is checked before any route is traced. Why: fails fast without tracing. Needs no doc beyond the limit itself.
 
 ### S2 Interactive HTML map (folium)
 
