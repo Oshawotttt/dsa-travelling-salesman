@@ -3,7 +3,8 @@
 Payload-aware aid airdrop: a plane leaves a base, drops 200 kg of supplies over a subset of Malaysian towns and returns with a fuel reserve.
 Fuel burn depends on the plane's current weight, so the cost of a leg depends on everything flown before it.
 The goal is to reach as many people as possible.
-[PROBLEM.md](PROBLEM.md) defines the problem, the fuel model and both approaches.
+[docs/PROBLEM.md](docs/PROBLEM.md) defines the problem, the fuel model and both approaches.
+[docs/CONTRACTS.md](docs/CONTRACTS.md) lists the package's public interfaces.
 
 ## Folder structure
 
@@ -16,9 +17,14 @@ airdrop/             Python package
   approach_b.py      Approach B: best-improvement local search (2-opt, add, swap, replace 1 with 2)
 tests/               pytest suite, one file per module
 data/                town data, not in git (see Data below)
-docs/                assignment brief and task specs
+docs/
+  PROBLEM.md         problem definition
+  CONTRACTS.md       public interfaces of the package
+  DECISIONS.md       decision log
+  EXPERIMENT.md      experiments to run for the presentation
+  TODO.md            open work
+  specs/             task specs
 eda.ipynb            data exploration and cleaning; writes data/cities_clean.csv
-PROBLEM.md           problem definition
 requirements.txt     dependencies (numpy, pytest)
 pyproject.toml       pytest configuration
 ```
@@ -78,19 +84,9 @@ control = Instance(BASES["perak"], towns, control_params(Params()))  # weight ef
 print("A under the control:", greedy_insertion(control).eval.population)
 ```
 
-Every solver returns a `SolveResult` with:
-
-- `route`: town indices in flying order, base left out (`towns[i - 1]` is town `i`);
-- `eval`: a `RouteEval` with `population`, `distance` (km), `cargo` (kg), `fuel_needed` (kg), `feasible` and `reason` (the first failed check, or `None`);
-- `stats`: counters for the run.
-  - `greedy_insertion`: `score_evals` (candidate scorings), `insertions`. The heap adds `heap_pops` and `heap_pushes` (the initial pushes included). `audit=True` adds `mismatches`: steps where the heap's pick differs from the full re-scan's. The audit's own scorings are not counted in `score_evals`.
-  - `nearest_neighbour`: `checks` (candidate feasibility checks) and `steps` (towns added).
-  - `local_search`: `rounds` (moves applied), one count per move type (`two_opt`, `add`, `swap`, `replace_1_2`), and `hit_max_rounds` (1 when `max_rounds` stopped the search with an improving move left).
-
+Every solver returns a `SolveResult` with `route`, `eval` (a `RouteEval`) and `stats` (counters for the run).
 To evaluate any route yourself, use `airdrop.evaluate(inst, route)`.
-`load_towns` keeps towns with `population >= min_population`, so the default `min_population=0` keeps all 745.
-All aircraft constants are fields of `Params` (`F`, `E`, `C`, `MTOW`, `c`, `w`, `R`, and optionally `a` and `b`).
-`local_search` takes `initial` (a feasible route; an infeasible one raises `ValueError`), `L` (candidates per removed town for replace 1 with 2, default 20) and `max_rounds` (default 10,000).
+[docs/CONTRACTS.md](docs/CONTRACTS.md) has the full signatures, fields, stats and errors.
 
 Run time: on all 745 towns from the Perak base, `greedy_insertion` takes a few seconds and `local_search` about a minute (127 rounds).
 Lower `L` to speed up local search.

@@ -1,4 +1,4 @@
-"""Approach B: best-improvement local search under the full fuel model (PROBLEM.md, Approach B).
+"""Approach B: best-improvement local search under the full fuel model (docs/PROBLEM.md, Approach B).
 
 Moves, each round over the whole neighbourhood:
 - 2-opt (i, j): reverse route[i..j]; improves when it needs less fuel.

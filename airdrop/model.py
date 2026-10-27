@@ -1,4 +1,4 @@
-"""Towns, bases, aircraft parameters and the closed-form route evaluator (PROBLEM.md, Fuel model).
+"""Towns, bases, aircraft parameters and the closed-form route evaluator (docs/PROBLEM.md, Fuel model).
 
 Units are km and kg. Index 0 is the base; towns are 1..n. A route lists town indices
 with the base left out: base -> route[0] -> ... -> route[-1] -> base.
@@ -37,7 +37,7 @@ class Base:
     lon: float
 
 
-# PROBLEM.md, Bases table; coordinates as in data/MY.txt. Three rural sites, and one
+# docs/PROBLEM.md, Bases table; coordinates as in data/MY.txt. Three rural sites, and one
 # existing airport near a populated area in each of the same regions.
 BASES: dict[str, Base] = {
     "perak": Base(1734611, "Kampung Sungai Semaliang", 4.98333, 101.21667),

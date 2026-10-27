@@ -1,4 +1,4 @@
-"""Payload-aware aid airdrop: model, evaluator and solvers (see PROBLEM.md)."""
+"""Payload-aware aid airdrop: model, evaluator and solvers (see docs/PROBLEM.md)."""
 from airdrop.model import (
     BASES,
     M_REF,
