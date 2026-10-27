@@ -10,6 +10,7 @@ from airdrop.exact_dp import exact_dp
 from airdrop.model import Base, Instance, Params, Town, control_params, evaluate
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
+TIE = 1e-9  # relative fuel difference treated as a tie
 
 
 def random_instance(seed, n, params=Params()):
@@ -28,14 +29,15 @@ def test_max_n():
 
 
 def brute_force(inst):
-    """(population, fuel needed) of the best route over every ordered subset, by evaluate."""
-    best = (0, inst.params.R)
-    for k in range(1, inst.n + 1):
-        for route in permutations(range(1, inst.n + 1), k):
-            ev = evaluate(inst, route)
-            if ev.feasible and (ev.population, -ev.fuel_needed) > (best[0], -best[1]):
-                best = (ev.population, ev.fuel_needed)
-    return best
+    """(population, fuel needed, route) of the best route over every ordered subset, by evaluate:
+    largest population, then least fuel, then smallest route among fuels within TIE of the least."""
+    feasible = [(ev.population, ev.fuel_needed, route)
+                for k in range(inst.n + 1) for route in permutations(range(1, inst.n + 1), k)
+                if (ev := evaluate(inst, route)).feasible]
+    population = max(pop for pop, _, _ in feasible)
+    fuel = min(f for pop, f, _ in feasible if pop == population)
+    route = min(r for pop, f, r in feasible if pop == population and f <= fuel * (1 + TIE))
+    return population, fuel, list(route)
 
 
 # tight F lets a few towns in, loose F lets the payload or takeoff weight bind
@@ -47,10 +49,23 @@ SMALL = [random_instance(seed, n=1 + seed % 7, params=params)
 
 @pytest.mark.parametrize("inst", SMALL)
 def test_matches_brute_force(inst):
-    ev = exact_dp(inst).eval
-    population, fuel = brute_force(inst)
-    assert ev.population == population
-    assert ev.fuel_needed == pytest.approx(fuel, rel=1e-6)
+    result = exact_dp(inst)
+    population, fuel, route = brute_force(inst)
+    assert result.eval.population == population
+    assert result.eval.fuel_needed == pytest.approx(fuel, rel=1e-6)
+    assert result.route == route
+
+
+# b = 0: a route and its reverse need the same fuel, up to rounding
+TIES = [random_instance(seed, n=1 + seed % 7, params=control_params(Params(F=3_500.0, C=800.0)))
+        for seed in (47, 172, 187)] + [
+    random_instance(seed, n=n, params=control_params(Params(F=4_500.0, C=1_000.0)))
+    for seed in range(20) for n in (2, 3, 4)]
+
+
+@pytest.mark.parametrize("inst", TIES)
+def test_ties_go_to_smallest_route(inst):
+    assert exact_dp(inst).route == brute_force(inst)[2]
 
 
 @pytest.mark.parametrize("inst", SMALL)
@@ -65,9 +80,9 @@ def test_beats_heuristics():
     for seed in range(10):
         inst = random_instance(100 + seed, n=12, params=Params(F=4_000.0, C=1_400.0))
         dp = exact_dp(inst).eval.population
-        greedy = greedy_insertion(inst).route
-        others = [nearest_neighbour(inst), greedy_insertion(inst), greedy_insertion(inst, "scan"),
-                  local_search(inst), local_search(inst, initial=greedy)]
+        greedy = greedy_insertion(inst)
+        others = [nearest_neighbour(inst), greedy, greedy_insertion(inst, "scan"),
+                  local_search(inst), local_search(inst, initial=greedy.route)]
         for other in others:
             assert dp >= other.eval.population
 
