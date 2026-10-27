@@ -13,6 +13,7 @@ from airdrop.model import BASES, Base, Instance, Params, Stop, Town, evaluate, t
 from experiments.e1_heap_vs_scan import run as e1
 from experiments.e2_run_time import run as e2
 from experiments.e3_bases import run as e3
+from experiments.e4_optimality_gap import run as e4
 from experiments.common import ALGORITHMS, read_runs, run, solve, write_outputs
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
@@ -186,3 +187,61 @@ def test_e3(tmp_path):
     for base in BASES:
         assert population[base, "b_on_a"] >= population[base, "a_heap"]
     assert_plot_from_csv_alone(e3.plot, tmp_path, tmp_path)
+
+
+R = Params().R
+
+
+def gap_samples():
+    pool = towns_near(BASES["perak"], 4, 15)
+    return [random.Random(seed).sample(pool, 6) for seed in range(5)]
+
+
+def dp_lengths(samples, F):
+    return [len(exact_dp(Instance(BASES["perak"], s, Params(F=F))).route) for s in samples]
+
+
+def test_full_fit_F():
+    samples = gap_samples()
+    F = e4.full_fit_F(samples, BASES["perak"], min_samples=3)
+    assert F % 10 == 0 and R <= F <= 21_100
+    assert sum(k == 6 for k in dp_lengths(samples, F)) >= 3
+    assert sum(k == 6 for k in dp_lengths(samples, F - 10)) < 3
+
+
+def test_coverage_F():
+    samples = gap_samples()
+    F = e4.coverage_F(samples, BASES["perak"], share=0.8)
+    assert F % 10 == 0 and R <= F <= 21_100
+    # 80% of 5 samples x 6 towns is 24 towns in all; these samples reach exactly 24
+    assert sum(dp_lengths(samples, F)) == 24
+    assert sum(dp_lengths(samples, F - 10)) < 24
+
+
+def run_e4(towns, out_dir):
+    e4.run_experiment(towns, out_dir, seeds=(0, 1), sample_size=6, min_samples=2)
+
+
+def test_e4(tmp_path):
+    towns = towns_near(BASES["perak"], 5, 15)
+    run_e4(towns, tmp_path)
+    runs = assert_conforms(tmp_path)
+    heuristics = ("nn", "a_heap", "b", "b_on_a")
+    Fs = sorted({r["F"] for r in runs})
+    assert len(Fs) == 2
+    assert sorted((r["sample"], r["F"], r["algorithm"]) for r in runs) == sorted(
+        (seed, F, name) for seed in (0, 1) for F in Fs for name in ("dp", *heuristics))
+    assert all(r["n_towns"] == 6 for r in runs)
+    dp = {(r["sample"], r["F"]): r["population"] for r in runs if r["algorithm"] == "dp"}
+    for r in runs:
+        assert r["population"] <= dp[r["sample"], r["F"]]
+    assert_plot_from_csv_alone(e4.plot, tmp_path, tmp_path)
+
+
+def test_e4_deterministic(tmp_path):
+    towns = towns_near(BASES["perak"], 5, 15)
+    run_e4(towns, tmp_path / "one")
+    run_e4(towns, tmp_path / "two")
+    assert (tmp_path / "one" / "routes.csv").read_bytes() == (tmp_path / "two" / "routes.csv").read_bytes()
+    strip = lambda runs: [{k: v for k, v in r.items() if k != "time_s"} for r in runs]
+    assert strip(read_runs(tmp_path / "one" / "runs.csv")) == strip(read_runs(tmp_path / "two" / "runs.csv"))

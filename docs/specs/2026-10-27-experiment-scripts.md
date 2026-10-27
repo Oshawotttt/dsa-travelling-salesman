@@ -236,13 +236,20 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
     | `F_tight` | 4,900 kg | 7–11 | 81% | 0.742 / 0.236 | 0.997 / 0.970 | 0.916 / 0.497 | 0.997 / 0.970 |
   - Plot: two panels, one per `F` value, each showing the gap per algorithm, one dot per sample plus the average. Decision (user): "yes". `transient`.
 - **Acceptance criteria:**
-  - [ ] `full_fit_F` returns a multiple of 10 in `[R, 21,100]`; at that `F` the DP route visits every town in at least `min_samples` samples. `tests/test_experiments.py::test_full_fit_F`
-  - [ ] `coverage_F` returns a multiple of 10 in `[R, 21,100]`; at that `F` the mean DP route length over the samples is ≥ `share` × sample size. `tests/test_experiments.py::test_coverage_F`
-  - [ ] On a small town list with 2 samples of 6 towns, outputs conform, with one `dp` row and one row per heuristic per (sample, `F` value), 2 distinct `F` values in all. Every heuristic population ≤ the `dp` population of its sample at the same `F`. `tests/test_experiments.py::test_e4`
-  - [ ] The same seeds give the same samples and the same `F_full` and `F_tight` on two calls. `tests/test_experiments.py::test_e4_deterministic`
-  - [ ] `plot` writes `plot.png` from `runs.csv` alone. `tests/test_experiments.py::test_e4`
-  - [ ] `python -m experiments.e4_optimality_gap.run` exits 0 and writes the three output files.
+  - [x] `full_fit_F` returns a multiple of 10 in `[R, 21,100]`; at that `F` the DP route visits every town in at least `min_samples` samples. `tests/test_experiments.py::test_full_fit_F`
+  - [x] `coverage_F` returns a multiple of 10 in `[R, 21,100]`; at that `F` the mean DP route length over the samples is ≥ `share` × sample size. `tests/test_experiments.py::test_coverage_F`
+  - [x] On a small town list with 2 samples of 6 towns, outputs conform, with one `dp` row and one row per heuristic per (sample, `F` value), 2 distinct `F` values in all. Every heuristic population ≤ the `dp` population of its sample at the same `F`. `tests/test_experiments.py::test_e4`
+  - [x] The same seeds give the same samples and the same `F_full` and `F_tight` on two calls. `tests/test_experiments.py::test_e4_deterministic`
+  - [x] `plot` writes `plot.png` from `runs.csv` alone. `tests/test_experiments.py::test_e4`
+  - [x] `python -m experiments.e4_optimality_gap.run` exits 0 and writes the three output files.
 - **Doc deltas:** `docs/EXPERIMENT.md`: experiment 4 sampling, and the `F_full` and `F_tight` values the run found.
+  - Decisions made during S6:
+    - `run_experiment(towns, out_dir, seeds=range(10), sample_size=12, base="perak", min_samples=8, share=0.8)`: `min_samples` and `share` are grid keywords passed on to `full_fit_F` and `coverage_F`, so a test with 2 samples can use `min_samples=2` (8 of 2 samples can never hold). Doc: `docs/EXPERIMENT.md` (experiment 4).
+    - `run_experiment` takes the sample pool as `towns`; the entry point builds it with `peninsular_towns(path)` in `e4_optimality_gap/run.py`, which reads the CSV's `region` column, because `Town` and `load_towns` carry no region and the model is out of scope. Doc: `docs/EXPERIMENT.md` (experiment 4).
+    - The binary search assumes its rule is false below the answer and true above it, searches multiples of 10 from `ceil(R / 10)` to `Params().F`, and raises `ValueError` when the rule fails at 21,100 kg. Doc: `docs/EXPERIMENT.md` (experiment 4).
+    - Runs go `F_full` first, then `F_tight`; for each sample `dp`, `nn`, `a_heap`, `b`, `b_on_a`, with `b_on_a` seeded by that sample's `a_heap` route at the same `F`. Every run is 1 repeat. Doc: `docs/EXPERIMENT.md` (experiment 4).
+    - The plot names the larger `F` "F_full" and the smaller "F_tight", since `runs.csv` holds only the values. `transient`.
+    - The run found `F_full = 5,640 kg` (DP visits 12 towns in 8 samples, 11 in 2; coverage 98.3%) and `F_tight = 4,890 kg` (DP visits 7–11 towns, 96 of 120; coverage exactly 80.0%). The gaps, to 3 decimals, are those of the planning table above. The planning table's 4,900 kg came from a float comparison: `0.8 * 12` is `9.600000000000001`, so a mean of exactly 9.6 towns failed the rule. `coverage_F` compares the town totals with a `1e-9` tolerance instead. Doc: `docs/EXPERIMENT.md` (experiment 4 results); the tolerance is a code comment in `coverage_F`.
 
 ## 6. Human checks
 
