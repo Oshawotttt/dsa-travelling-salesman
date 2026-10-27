@@ -225,17 +225,24 @@ def test_trace_endpoints():
                     t.geonameid, t.name, t.lat, t.lon, t.population)
 
 
-def simulate_stops(inst, route, F0, step=0.01):
-    """Fuel on arrival at each drop and at landing, from the step-by-step flight above."""
+def simulate_stops(inst, route, F0, step=1.0):
+    """Fuel on arrival at each drop and at landing: dF/dx = -(a + b (cargo + F)) integrated
+    with classic Runge-Kutta (RK4), dropping w at each town."""
     p = inst.params
     cargo, fuel, arrivals = p.w * len(route), F0, []
     nodes = [0, *route, 0]
     for leg, (i, j) in enumerate(zip(nodes, nodes[1:])):
+        def burn(f):
+            return -(inst.a + inst.b * (cargo + f))
         remaining = inst.dist(i, j)
         while remaining > 0:
-            dx = min(step, remaining)
-            fuel -= (inst.a + inst.b * (cargo + fuel)) * dx
-            remaining -= dx
+            h = min(step, remaining)
+            k1 = burn(fuel)
+            k2 = burn(fuel + h / 2 * k1)
+            k3 = burn(fuel + h / 2 * k2)
+            k4 = burn(fuel + h * k3)
+            fuel += h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+            remaining -= h
         arrivals.append(fuel)
         if leg < len(route):
             cargo -= p.w
@@ -251,7 +258,7 @@ def test_trace_matches_fuel_end():
             assert stops[-1].fuel_kg == pytest.approx(fuel_end(inst, route, F0), rel=1e-9)
             arrivals = simulate_stops(inst, route, F0)
             for s, fuel in zip(stops[1:], arrivals):
-                assert s.fuel_kg == pytest.approx(fuel, abs=0.01)
+                assert s.fuel_kg == pytest.approx(fuel, rel=1e-9)
 
 
 def test_trace_invariants():
