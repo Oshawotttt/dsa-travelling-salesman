@@ -99,17 +99,22 @@ def trace(inst: Instance, route: Sequence[int]) -> list[Stop]
   - Cost: `O(n² · 2ⁿ)` time, `O(n · 2ⁿ)` memory. Doc delta: `docs/PROBLEM.md`.
   - `max_n` default 15. Decision (user): "just max 15". Doc delta: `docs/CONTRACTS.md`.
 - **Acceptance criteria:**
-  - [ ] On 20 random instances of 1–7 towns (tight and loose `F`, and `control_params`), `exact_dp` population and fuel needed equal a brute force over every ordered subset (fuel within `1e-6` relative). `tests/test_exact_dp.py::test_matches_brute_force`
-  - [ ] `result.eval == evaluate(inst, result.route)` and `result.eval.feasible` (or `route == []`). `tests/test_exact_dp.py::test_consistent`
-  - [ ] DP population ≥ NN, A (heap and scan), B and B on A on 10 random 12-town instances. `tests/test_exact_dp.py::test_beats_heuristics`
-  - [ ] Instance where no town fits returns `route == []`, population 0. `tests/test_exact_dp.py::test_nothing_fits`
-  - [ ] `inst.n > max_n` raises `ValueError`. `tests/test_exact_dp.py::test_max_n`
-  - [ ] Two calls on the same instance return equal results. `tests/test_exact_dp.py::test_deterministic`
-  - [ ] Full suite passes: `python -m pytest`.
+  - [x] On 20 random instances of 1–7 towns (tight and loose `F`, and `control_params`), `exact_dp` population and fuel needed equal a brute force over every ordered subset (fuel within `1e-6` relative). `tests/test_exact_dp.py::test_matches_brute_force`
+  - [x] `result.eval == evaluate(inst, result.route)` and `result.eval.feasible` (or `route == []`). `tests/test_exact_dp.py::test_consistent`
+  - [x] DP population ≥ NN, A (heap and scan), B and B on A on 10 random 12-town instances. `tests/test_exact_dp.py::test_beats_heuristics`
+  - [x] Instance where no town fits returns `route == []`, population 0. `tests/test_exact_dp.py::test_nothing_fits`
+  - [x] `inst.n > max_n` raises `ValueError`. `tests/test_exact_dp.py::test_max_n`
+  - [x] Two calls on the same instance return equal results. `tests/test_exact_dp.py::test_deterministic`
+  - [x] Full suite passes: `python -m pytest`.
 - **Doc deltas:**
   - `docs/CONTRACTS.md`: `exact_dp` section (section 4 of this spec).
   - `docs/PROBLEM.md`, Exact DP: replace the forward per-`k` table with the backward DP above, its exactness argument, pruning and cost `O(n²·2ⁿ)`.
   - `README.md`: folder structure line for `exact_dp.py`; usage `exact_dp(inst)`; remove "the exact DP" from "Not implemented".
+  - Decisions made during implementation:
+    - `before` is computed as `f + (b·(f + cargo) + a)·φ(b, d)`, the same formula as above, reusing `model.phi` so `b = 0` is exact and an overflow gives `inf` (NaN mapped to `inf`). Needs no doc: the code comment states it.
+    - `stats["transitions"]` counts every `before` call that computes a candidate `need` entry, including the landing leg of `|U| = 1`; takeoff legs are not counted. Doc: `docs/CONTRACTS.md`.
+    - Ties in `need` and in the takeoff choice keep the smallest town index (towns scanned in ascending order, strict `<`), so among routes with exactly equal fuel the rebuilt route is the smallest tuple. The fuel and tie rules (and `fits`) are applied to the DP's own float fuel, not `evaluate`'s, so routes whose fuel differs only by rounding (e.g. a route and its reverse at `b = 0`) may not follow the tuple rule. Doc: `docs/PROBLEM.md`, Exact DP, and `docs/CONTRACTS.md`.
+    - A set with `w·|U| > C` is skipped whole, before any entry is computed. Doc: `docs/PROBLEM.md`, Exact DP (pruning).
 
 ### S2 Route trace (per-stop record)
 
