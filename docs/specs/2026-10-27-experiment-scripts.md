@@ -205,10 +205,15 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
   - All 6 bases (`RURAL_BASES`, `URBAN_BASES`), default `Params` (`F = 21,100 kg`; user: "the bases exp aslo"), 745 towns, algorithms `nn`, `a_heap`, `b`, `b_on_a` (user: "yes"). `b_on_a` is seeded with the same base's `a_heap` route. Regions: `perak`/`klia` Peninsula, `sarawak`/`kuching` Sarawak, `sabah`/`kota_kinabalu` Sabah (docs: `DECISIONS.md` 2026-10-27). Doc delta: via S2.
   - B on A is kept off the main chart (user, via S2). Plot: bars grouped by region, rural and non-rural side by side, one bar per algorithm; B on A in a separate panel. Decision (user): "yes". `transient`.
 - **Acceptance criteria:**
-  - [ ] On a small town list, outputs conform with one row per (base, algorithm) for all 6 bases, and every row has `F == 21100`. Each `b_on_a` population ≥ the `a_heap` population from the same base. `tests/test_experiments.py::test_e3`
-  - [ ] `plot` writes `plot.png` from `runs.csv` alone. `tests/test_experiments.py::test_e3`
-  - [ ] `python -m experiments.e3_bases.run` exits 0 and writes the three output files.
+  - [x] On a small town list, outputs conform with one row per (base, algorithm) for all 6 bases, and every row has `F == 21100`. Each `b_on_a` population ≥ the `a_heap` population from the same base. `tests/test_experiments.py::test_e3`
+  - [x] `plot` writes `plot.png` from `runs.csv` alone. `tests/test_experiments.py::test_e3`
+  - [x] `python -m experiments.e3_bases.run` exits 0 and writes the three output files.
 - **Doc deltas:** none beyond S2.
+  - Decisions made during S5:
+    - `run_experiment(towns, out_dir, bases=tuple(BASES))`: the base list is a grid keyword defaulting to all 6 bases; the region pairing lives in `REGIONS` in `e3_bases/run.py`. Doc: `docs/EXPERIMENT.md` (experiment 3).
+    - Each base's runs go in the order `nn`, `a_heap`, `b`, `b_on_a`, so `b_on_a` is seeded with the `a_heap` route just computed. Every run is 1 repeat. Doc: `docs/EXPERIMENT.md` (experiment 3).
+    - The plot labels each bar group with its base key and "(rural)" or "(non-rural)", with the region name above each pair; legends sit below the axes so no bar is hidden. `transient`.
+    - The full run takes about 8.5 minutes, mostly B (about 30–115 s per base). Doc: `README.md` (Running the experiments).
 
 ### S6 Experiment 4: optimality gap
 

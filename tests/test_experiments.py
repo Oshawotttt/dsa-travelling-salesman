@@ -12,6 +12,7 @@ from airdrop.exact_dp import exact_dp
 from airdrop.model import BASES, Base, Instance, Params, Stop, Town, evaluate, trace
 from experiments.e1_heap_vs_scan import run as e1
 from experiments.e2_run_time import run as e2
+from experiments.e3_bases import run as e3
 from experiments.common import ALGORITHMS, read_runs, run, solve, write_outputs
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
@@ -170,3 +171,18 @@ def test_e2(tmp_path):
         for thr in thresholds for name in ("nn", "a_heap", "a_scan", "b"))
     assert all(r["F"] == 21_100 for r in runs)
     assert_plot_from_csv_alone(e2.plot, tmp_path, tmp_path)
+
+
+def test_e3(tmp_path):
+    towns = [Town(100 * k + t.geonameid, t.name, t.lat, t.lon, t.population)
+             for k, key in enumerate(BASES) for t in towns_near(BASES[key], k, 2)]
+    e3.run_experiment(towns, tmp_path)
+    runs = assert_conforms(tmp_path)
+    algorithms = ("nn", "a_heap", "b", "b_on_a")
+    assert sorted((r["base"], r["algorithm"]) for r in runs) == sorted(
+        (base, name) for base in BASES for name in algorithms)
+    assert all(r["F"] == 21_100 and r["n_towns"] == len(towns) for r in runs)
+    population = {(r["base"], r["algorithm"]): r["population"] for r in runs}
+    for base in BASES:
+        assert population[base, "b_on_a"] >= population[base, "a_heap"]
+    assert_plot_from_csv_alone(e3.plot, tmp_path, tmp_path)
