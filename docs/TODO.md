@@ -11,7 +11,7 @@ Deadline: Week 12 Sunday, 11pm, on eLearn.
 
 ## Docs
 
-- [ ] PROBLEM.md: lazy-heap scores rise, not fall (EXPERIMENT.md, experiment 3).
+- [ ] PROBLEM.md: lazy-heap scores rise, not fall (EXPERIMENT.md, experiment 1).
 - [ ] README: how to run the experiments and the DP.
 - [ ] AI usage: tools, where used, what is original, 3 example prompts (brief §11.3).
 

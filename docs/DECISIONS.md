@@ -46,3 +46,13 @@ If the rural site reaches many more, the non-numerical costs may be worth paying
 - Needing less fuel later always means needing less fuel earlier, so keeping only the least fuel per state loses no route. The answer is still exact.
 
 **Consequence:** the Exact DP section of [PROBLEM.md](PROBLEM.md#exact-dp) is rewritten to the backward version when the DP is implemented.
+
+## 2026-10-27: No control experiment
+
+**Change:** the control experiment (rerun the fuel sweep with `control_params`, `b = 0`) was dropped from [EXPERIMENT.md](EXPERIMENT.md) and the evaluation plan in [PROBLEM.md](PROBLEM.md#evaluation-plan).
+`control_params` stays in the code.
+
+**Why:** the weight effect is large enough to argue without running it.
+Burn per km is `c × total mass`, and total mass ranges from 33,600 kg (empty) to 70,300 kg (MTOW), so a full plane burns about twice as much per km as an empty one.
+
+**Consequence:** the slides justify the weight model with this calculation instead of a plot.

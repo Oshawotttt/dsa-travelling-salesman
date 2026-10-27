@@ -5,16 +5,15 @@ Algorithms: nearest neighbour (NN), Approach A, Approach B. Default: all 745 tow
 
 | # | Experiment | Question | Plot |
 |---|---|---|---|
-| 1 | Fuel sweep | Who reaches the most people as fuel gets tighter? Sweep `F` from 3,000 to 20,000 kg. | Population vs `F`, one line per algorithm |
-| 2 | Run time | How does each algorithm scale? Use about 83, 144, 355, 745 towns. | Time vs number of towns |
-| 3 | Heap vs scan | Is A's lazy heap faster, and how often does it pick a different town? Use `audit=True`. | Time and mismatches vs `F` |
+| 1 | Heap vs scan | Is A's lazy heap faster, and how often does it pick a different town? Use `audit=True`. Run first: it picks A's selector for the other experiments. | Time and mismatches vs `F` |
+| 2 | Fuel sweep | Who reaches the most people as fuel gets tighter? Sweep `F` from 3,000 to 20,000 kg. | Population vs `F`, one line per algorithm |
+| 3 | Run time | How does each algorithm scale? Use about 83, 144, 355, 745 towns. | Time vs number of towns |
 | 4 | Bases | Which of the 6 bases reaches the most people at `F = 20,000 kg`, and how much does a non-rural base gain over the rural one in its region? | Bar per base, grouped by region |
-| 5 | Control | Does the weight model matter? Rerun 1 with `control_params`. | Population, real model vs control |
-| 6 | Optimality gap | How close are A and B to the best route? Exact DP on 10 random 12-town samples. | Gap per algorithm |
+| 5 | Optimality gap | How close are A and B to the best route? Exact DP on 10 random 12-town samples. | Gap per algorithm |
 
-Also report B on A's route (`local_search(inst, initial=a.route)`) as a separate row in experiment 1.
+Also report B on A's route (`local_search(inst, initial=a.route)`) as a separate row in experiment 2.
 
-## Trial result for experiment 3
+## Trial result for experiment 1
 
 86 towns (population ≥ 100,000), Perak base, 2026-10-21:
 

@@ -176,7 +176,6 @@ Each approach solves the whole variant: all four broken assumptions at once.
 - **Optimality gap:** exact DP (below) on 10 random 12-town samples, with `F` set so about half the towns fit. Report the average and worst gap: heuristic population ÷ optimal population.
 - **Data-structure comparison:** lazy heap against full re-scan in Approach A.
 - **Base comparison:** population reached from each of the six bases at `F = 20 t`, rural against non-rural in each region.
-- **Control:** `b = 0` with `a = c × 60,000 ≈ 4.2 kg/km` switches off the weight model and reduces the problem to the plain Orienteering Problem (`F₀_needed = R + a × D`). The average burn per km stays the same and only the weight effect is removed. It isolates the effect of the weight-dependent cost. (`c = 0` is not the control: with `a = c × E` it would burn no fuel at all.)
 - **Complexity analysis** of each approach, including the O(1) move evaluation with prefix sums.
 
 ### Exact DP
