@@ -114,3 +114,20 @@ def read_runs(path: Path) -> list[dict]:
             row["stats"] = json.loads(row["stats"])
             out.append(row)
         return out
+
+
+_STOP_TYPES = {"int": int, "float": float, "str": str}
+
+
+def read_routes(path: Path) -> dict[int, list[Stop]]:
+    """Stops of a routes.csv, keyed by run_id, each list in step order."""
+    casts = [(f.name, _STOP_TYPES[f.type if isinstance(f.type, str) else f.type.__name__])
+             for f in fields(Stop)]
+    with open(path, newline="", encoding="utf-8") as f:
+        out: dict[int, list[Stop]] = {}
+        for row in csv.DictReader(f):
+            stop = Stop(*(cast(row[name]) for name, cast in casts))
+            out.setdefault(int(row["run_id"]), []).append(stop)
+    for stops in out.values():
+        stops.sort(key=lambda s: s.step)
+    return out

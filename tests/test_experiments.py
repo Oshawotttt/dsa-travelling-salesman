@@ -14,7 +14,8 @@ from experiments.e1_heap_vs_scan import run as e1
 from experiments.e2_run_time import run as e2
 from experiments.e3_bases import run as e3
 from experiments.e4_optimality_gap import run as e4
-from experiments.common import ALGORITHMS, read_runs, run, solve, write_outputs
+from experiments import maps
+from experiments.common import ALGORITHMS, read_routes, read_runs, run, solve, write_outputs
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
 
@@ -177,6 +178,53 @@ def test_e2(tmp_path):
         for thr in thresholds for name in ("nn", "a_heap", "a_scan", "b"))
     assert all(r["F"] == 21_100 for r in runs)
     assert_plot_from_csv_alone(e2.plot, tmp_path, tmp_path)
+
+
+def test_read_routes(tmp_path):
+    inst = small_instance()
+    r0, s0, _ = run("e0_test", 0, inst, "origin", "a_heap")
+    r1, s1, _ = run("e0_test", 1, inst, "origin", "nn")
+    write_outputs(tmp_path, [r0, r1], {0: s0, 1: s1})
+    assert read_routes(tmp_path / "routes.csv") == {0: s0, 1: s1}
+
+
+def maps_output(tmp_path):
+    """Two instances (F 4,000 and 5,000 kg) with two runs each, plus a second sample at 4,000 kg."""
+    runs, stops = [], {}
+    for F, sample, names in ((4_000.0, 0, ("nn", "a_heap")), (5_000.0, 0, ("b", "a_scan")),
+                             (4_000.0, 1, ("dp",))):
+        inst = small_instance(params=Params(F=F))
+        for name in names:
+            r, s, _ = run("e0_test", len(runs), inst, "origin", name, sample=sample)
+            runs.append(r)
+            stops[r.run_id] = s
+    write_outputs(tmp_path, runs, stops)
+    return stops
+
+
+def test_maps_one_per_instance(tmp_path):
+    stops = maps_output(tmp_path)
+    paths = maps.write_maps(tmp_path)
+    assert [p.name for p in paths] == ["origin_n8_s0_F4000.html", "origin_n8_s0_F5000.html",
+                                       "origin_n8_s1_F4000.html"]
+    assert all(p.parent == (tmp_path / "maps").resolve() for p in paths)
+    first = paths[0].read_text(encoding="utf-8")
+    assert "e0_test: origin, 8 towns, sample 0, F 4,000 kg" in first
+    assert "NN" in first and "A" in first and "A scan" not in first
+    for s in stops[0][1:-1] + stops[1][1:-1]:
+        assert s.name in first
+    assert "A scan" in paths[1].read_text(encoding="utf-8")
+
+
+def test_maps_cli(tmp_path, capsys):
+    maps_output(tmp_path)
+    maps.main([str(tmp_path), "--out", str(tmp_path / "elsewhere")])
+    printed = capsys.readouterr().out.split()
+    assert len(printed) == 3 and all("elsewhere" in line for line in printed)
+    with pytest.raises(SystemExit):
+        maps.main([str(tmp_path / "missing")])
+    with pytest.raises(SystemExit):
+        maps.main([str(tmp_path), str(tmp_path), "--out", str(tmp_path / "x")])
 
 
 def test_e3(tmp_path):

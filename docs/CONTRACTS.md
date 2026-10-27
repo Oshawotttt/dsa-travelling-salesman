@@ -199,6 +199,13 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
                      title: str | None = None,
                      colors: Mapping[str, str] | None = None,
                      theme: Mapping[str, str] | None = None) -> Path
+
+def stop_layers(routes: Mapping[str, Sequence[Stop]],
+                colors: Mapping[str, str] | None = None) -> list[RouteLayer]
+def plot_stops_html(base: Base, towns: Sequence[Town], routes: Mapping[str, Sequence[Stop]],
+                    path: str | Path, title: str | None = None,
+                    colors: Mapping[str, str] | None = None,
+                    theme: Mapping[str, str] | None = None) -> Path
 ```
 
 - `airdrop.plot` is imported on its own (`from airdrop.plot import ...`) and is not re-exported from `airdrop`, so `import airdrop` never needs `folium`.
@@ -208,10 +215,11 @@ def plot_routes_html(inst: Instance, routes: Mapping[str, Sequence[int]], path: 
 - `theme` keys override `THEME` keys; missing keys fall back to `THEME`.
 - `route_layers` keeps the order of `routes`. A route that `trace` rejects (bad index, infinite fuel) raises `ValueError(f"route {label!r}: <trace message>")`, chained from the `trace` error.
 - An empty route `[]` gives a layer of two stops (takeoff and landing at the base) and draws no legs.
+- `stop_layers` and `plot_stops_html` take routes already traced: each value is a route's stops, takeoff to landing (as `trace` returns them, or as `read_routes` reads them back). Count limits and colours are as for `route_layers`; the stops are used as given, not re-traced. `plot_stops_html` draws `towns` as the small background circles and `base` as the base marker; otherwise its output is the same as `plot_routes_html` for the same stops.
 - `plot_routes_html` creates parent directories, writes the HTML file, and returns the resolved path.
-- Map content: tiles are CartoDB Positron (`tiles="CartoDB positron"`, attribution kept); the map opens centred on the base at zoom 7. Every town in the instance is a small circle marker in the `towns` colour, with no tooltip. Each route is its own `folium.FeatureGroup` named by its label. Its legs are straight lat/lon polylines between stops (not great-circle arcs), and its visited towns are larger circle markers in the route colour. The base is the largest circle marker, in the `text` colour, with a tooltip naming it.
+- Map content: tiles are OpenStreetMap (`tiles="OpenStreetMap"`, attribution kept; CartoDB Positron now needs an API key); the map opens framed on the base and every route stop (30 px padding), or centred on the base at zoom 7 when no route leaves it. Every town in the instance is a small circle marker in the `towns` colour, with no tooltip. Each route is its own `folium.FeatureGroup` named by its label. Its legs are straight lat/lon polylines between stops (not great-circle arcs), and its visited towns are larger circle markers in the route colour. The base is the largest circle marker, in the `text` colour, with a tooltip naming it.
 - Each visited town's tooltip shows route label, step number, name, population, fuel on arrival (kg), cargo on arrival (kg) and `lat, lon` to 4 decimals, from `trace`. There are no permanent town labels.
-- `LayerControl` sits top left, expanded, and lists the route layers as overlays; the Positron tile layer is its only base layer. Town and base markers are added to the map directly and cannot be toggled.
+- `LayerControl` sits top left, expanded, and lists the route layers as overlays; the OpenStreetMap tile layer is its only base layer. Town and base markers are added to the map directly and cannot be toggled.
 - A fixed legend box (top right) lists each route label with its colour swatch, and the title if given, on the `background` colour with `text` colour text.
 - Labels, names and the title are HTML-escaped (with `` ` `` and `$` also escaped) before going into tooltips, layer names and the legend.
 
@@ -261,6 +269,7 @@ def run(experiment: str, run_id: int, inst: Instance, base: str, algorithm: str,
         a_route: Sequence[int] | None = None) -> tuple[Run, list[Stop], SolveResult]
 def write_outputs(out_dir: Path, runs: Sequence[Run], stops: Mapping[int, Sequence[Stop]]) -> None
 def read_runs(path: Path) -> list[dict]
+def read_routes(path: Path) -> dict[int, list[Stop]]
 ```
 
 Every solver run in every experiment goes through `run()`, and every plot is drawn only from the CSV files, never from in-memory results. The map plot of routes reads `routes.csv`.
@@ -291,6 +300,30 @@ Algorithm names:
 - The columns of both files are derived from the `Run` and `Stop` dataclass fields (`routes.csv` is the 4 key columns then every `Stop` field), so the files cannot drift from the dataclasses.
 
 `read_runs` returns one dict per row with typed values: `run_id`, `n_towns`, `population`, `towns_visited` as `int`; `F`, `distance_km`, `fuel_needed_kg`, `time_s` as `float`; `feasible` as `bool`; `sample` as `None` when empty, else `int`; `stats` parsed from JSON. Plots need no casting.
+
+`read_routes` returns each run's stops as `Stop` objects keyed by `run_id`, each list in `step` order; values are cast to the `Stop` field types, so it returns what `trace` returned.
+
+### Route maps
+
+```
+python -m experiments.maps FOLDER [FOLDER ...] [--out DIR]
+```
+
+```python
+# experiments/maps.py
+LABELS = {"nn": "NN", "a_heap": "A", "a_scan": "A scan", "b": "B", "b_on_a": "B on A", "dp": "DP"}
+
+def map_name(base: str, n_towns: int, sample: int | None, F: float) -> str
+def write_maps(out_dir: Path, maps_dir: Path | None = None) -> list[Path]
+def main(argv: Sequence[str] | None = None) -> None
+```
+
+- Reads `runs.csv` and `routes.csv` of an experiment output folder only; nothing is re-solved and `data/` is not read.
+- One map per instance: runs with the same `(base, n_towns, sample, F)`, in first-run order. Each run is one layer, labelled by `LABELS` (so it gets its `ROUTE_COLORS` colour); `a_scan` takes a spare colour. Every experiment has at most 5 runs per instance.
+- File: `<maps_dir>/<base>_n<n_towns>[_s<sample>]_F<F>.html`, e.g. `perak_n745_F21100.html`, `perak_n12_s3_F4890.html`. `maps_dir` defaults to `<out_dir>/maps`.
+- Title: `<experiment>: <base>, <n_towns> towns[, sample <sample>], F <F> kg`.
+- The base marker is the takeoff stop. The grey background circles are the towns visited by any route on that map: towns no route visits are not in the CSVs, so they are not drawn.
+- `main` prints each written path. It exits with an argparse error when a folder lacks `runs.csv` or `routes.csv`, or when `--out` is given with more than one folder.
 
 Each experiment folder `experiments/eN_<name>/` has `run.py` with:
 

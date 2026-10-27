@@ -1,7 +1,9 @@
+import re
+
 import pytest
 
-from airdrop.model import Base, Instance, Params, Town
-from airdrop.plot import ROUTE_COLORS, THEME, RouteLayer, plot_routes_html, route_layers
+from airdrop.model import Base, Instance, Params, Town, trace
+from airdrop.plot import ROUTE_COLORS, THEME, RouteLayer, plot_routes_html, plot_stops_html, route_layers, stop_layers
 
 BASE = Base(1, "Home Base", 4.5, 101.0)
 TOWNS = [
@@ -106,9 +108,9 @@ def test_html_has_visited_town_coordinates(tmp_path):
         assert lat in html and lon in html
 
 
-def test_html_uses_positron_route_colors_and_theme(tmp_path):
+def test_html_uses_osm_route_colors_and_theme(tmp_path):
     html = html_of(tmp_path, {"A": [1], "mine": [2]}, colors={"A": "#123456"})
-    for text in ["positron", "#123456", "#EE7733", THEME["background"], THEME["text"]]:
+    for text in ["tile.openstreetmap.org", "#123456", "#EE7733", THEME["background"], THEME["text"]]:
         assert text.lower() in html.lower()
 
 
@@ -154,3 +156,21 @@ def test_backticks_and_template_markers_are_escaped(tmp_path):
     for raw in ["Tok`s", "${town}", "R`", "${x}", "T`", "${t}"]:
         assert raw not in html
     assert "Tok&#96;s &#36;{town}" in html
+
+
+def test_stop_layers_match_route_layers():
+    inst = instance()
+    routes = {"B": [3, 1], "Mine": [2]}
+    assert stop_layers({k: trace(inst, r) for k, r in routes.items()}) == route_layers(inst, routes)
+    with pytest.raises(ValueError):
+        stop_layers({})
+
+
+def test_stops_html_matches_routes_html(tmp_path):
+    inst = instance()
+    routes = {"A": [1, 2], "B": [3]}
+    by_route = plot_routes_html(inst, routes, tmp_path / "r.html", title="T")
+    by_stops = plot_stops_html(BASE, TOWNS, {k: trace(inst, r) for k, r in routes.items()},
+                               tmp_path / "s.html", title="T")
+    strip = lambda text: re.sub(r"_[0-9a-f]{32}", "", text)
+    assert strip(by_stops.read_text(encoding="utf-8")) == strip(by_route.read_text(encoding="utf-8"))
