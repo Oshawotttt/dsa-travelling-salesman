@@ -187,10 +187,13 @@ It is run as `python -m experiments.eN_<name>.run` from the repo root. That load
   - Default `Params` (`F = 21,100 kg`, user), Perak base; thresholds 100,000 / 50,000 / 15,000 / 0; algorithms `nn`, `a_heap`, `a_scan`, `b`; timing best of 3. Decision (user): "yes". EXPERIMENT.md's 83 / 144 / 355 come from an older cleaning. Doc delta: `docs/EXPERIMENT.md` (actual town counts 86 / 148 / 358 / 745).
   - Plot: time against `n_towns`, one line per algorithm, log y axis. Decision (user): "yes". `transient`.
 - **Acceptance criteria:**
-  - [ ] On a small town list and 2 thresholds, outputs conform with one row per (threshold, algorithm), every row has `F == 21100`, and `n_towns` equals the towns kept. `tests/test_experiments.py::test_e2`
-  - [ ] `plot` writes `plot.png` from `runs.csv` alone. `tests/test_experiments.py::test_e2`
-  - [ ] `python -m experiments.e2_run_time.run` exits 0 and writes the three output files.
+  - [x] On a small town list and 2 thresholds, outputs conform with one row per (threshold, algorithm), every row has `F == 21100`, and `n_towns` equals the towns kept. `tests/test_experiments.py::test_e2`
+  - [x] `plot` writes `plot.png` from `runs.csv` alone. `tests/test_experiments.py::test_e2`
+  - [x] `python -m experiments.e2_run_time.run` exits 0 and writes the three output files.
 - **Doc deltas:** `docs/EXPERIMENT.md`: experiment 2 town counts.
+  - Decisions made during S4:
+    - `run_experiment(towns, out_dir, thresholds=(100_000, 50_000, 15_000, 0), base="perak", repeats=3)`, the same grid keywords as experiment 1. Doc: `docs/EXPERIMENT.md` (experiment 2).
+    - The full run takes about 8.5 minutes, almost all of it B on 358 and 745 towns timed 3 times (about 34 s and 94 s per call). Doc: `README.md` (Running the experiments).
 
 ### S5 Experiment 3: bases
 

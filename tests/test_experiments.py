@@ -11,6 +11,7 @@ from airdrop.baseline import nearest_neighbour
 from airdrop.exact_dp import exact_dp
 from airdrop.model import BASES, Base, Instance, Params, Stop, Town, evaluate, trace
 from experiments.e1_heap_vs_scan import run as e1
+from experiments.e2_run_time import run as e2
 from experiments.common import ALGORITHMS, read_runs, run, solve, write_outputs
 
 BASE0 = Base(0, "origin", 0.0, 0.0)
@@ -157,3 +158,15 @@ def test_e1(tmp_path):
     assert all(r["F"] == 21_100 for r in runs)
     assert all("mismatches" in r["stats"] for r in runs if r["algorithm"] == "a_heap")
     assert_plot_from_csv_alone(e1.plot, tmp_path, tmp_path)
+
+
+def test_e2(tmp_path):
+    towns = towns_near(BASES["perak"], 2, 12)
+    thresholds = (100_000, 0)
+    e2.run_experiment(towns, tmp_path, thresholds=thresholds, repeats=1)
+    runs = assert_conforms(tmp_path)
+    assert sorted((r["n_towns"], r["algorithm"]) for r in runs) == sorted(
+        (sum(t.population >= thr for t in towns), name)
+        for thr in thresholds for name in ("nn", "a_heap", "a_scan", "b"))
+    assert all(r["F"] == 21_100 for r in runs)
+    assert_plot_from_csv_alone(e2.plot, tmp_path, tmp_path)
