@@ -10,8 +10,13 @@ Default: all 745 towns, Perak base, default `Params` (`F = 21,100 kg`, the full 
 | 2 | `e2_run_time` | Run time | How does each algorithm's run time grow with the number of towns? NN, A (heap and scan), B, same thresholds. | Time against number of towns, one line per algorithm |
 | 3 | `e3_bases` | Bases | Which of the 6 bases reaches the most people, and how much does a non-rural base gain over the rural one in its region? NN, A, B, and B on A. | Bars grouped by region, rural and non-rural side by side; B on A in a separate panel |
 | 4 | `e4_optimality_gap` | Optimality gap | How close do NN, A, B and B on A come to the exact DP? 10 random 12-town samples of Peninsular towns, Perak base, at two lower fixed fuel caps `F_full` and `F_tight`. | Gap per algorithm, one panel per `F` |
+| 5 | `e5_population_sort` | Population sort | Does sorting towns by population, inserting each at its cheapest feasible gap, then applying only 2-opt get within 1–2% of the better of B and B on A at each base? All 745 towns and `F = 21,100 kg`. | Population bars for A, sort-then-fit, and best of B |
 
 B on A is local search started from A's route (`local_search(inst, initial=a.route)`). It is reported in experiment 3 as its own row, kept off the main NN/A/B chart.
+
+Experiment 5's sort-then-fit visits towns in descending population order (index breaks ties), inserts each at its cheapest feasible gap in one pass, then applies fuel-improving 2-opt reversals until none remain. It does not use B's add, swap, or replace moves. The comparison uses the larger population of B from nearest neighbour and B on A for each base, matching the slide's "Best of B" series. `summary.csv` records the exact population, visited-town count, fuel needed, selected B variant, and `100 × (best B − sort) / best B` gap per base. Negative gap means sort won.
+
+The default Experiment 5 command reads its bundled 745-town input, reruns A and sort-then-fit, validates the input by matching A's routes and populations against Experiment 3 at all six bases, and re-evaluates the committed Experiment 3 B routes under the current fuel model. This avoids a slow B recomputation. The B `time_s` values in `runs.csv` remain Experiment 3's timings. `provenance.json` records the input and Experiment 3 output checksums and reuse. `--fresh-b` recomputes both B variants instead.
 
 Experiment 4's two fuel caps are each the same for all 10 samples, and each is an assumption: a partial fuel load for a short-range sortie. At `F = 21,100 kg` every 12-town sample fits whole, so every heuristic scores exactly the optimum.
 
@@ -74,6 +79,19 @@ From the East Malaysian bases, B started from the NN route stays at 4.41 M, whil
 | `F_tight` | 4,890 kg | 7-11 (96 of 120) | 80.0% | 0.742 / 0.236 | 0.997 / 0.970 | 0.916 / 0.497 | 0.997 / 0.970 |
 
 `F_tight` is 4,890 kg, not the 4,900 kg of the planning estimate: `0.8 * 12` is `9.600000000000001` in floating point, so `coverage_F` compares the town totals with a `1e-9` tolerance. The plot writes the average and worst gap under each algorithm in each panel.
+
+**Experiment 5** (all 745 towns, `F = 21,100 kg`; population score in millions):
+
+| Base | A | Sort-then-fit | Best B | B seed | Sort towns | Gap to B |
+|---|---:|---:|---:|---|---:|---:|
+| Perak | 25.38 | 27.06 | 27.58 | NN | 83 | 1.88% |
+| KLIA | 24.02 | 27.06 | 27.35 | NN | 83 | 1.06% |
+| Long Geng | 24.97 | 27.06 | 27.28 | A | 83 | 0.81% |
+| Kg Balat | 22.58 | 26.75 | 27.04 | A | 80 | 1.06% |
+| Kuching | 25.05 | 27.26 | 27.51 | A | 85 | 0.91% |
+| Kota Kinabalu | 23.34 | 26.86 | 27.13 | A | 81 | 1.02% |
+
+The slide's "1–2%" is a rounded description: the exact gap spans 0.81–1.88%. Sort-then-fit beats A at every base. Its 80–85 visited towns fall below the 98-drop payload ceiling; the fuel and takeoff-weight constraints limit further insertions. These are population scores summed across selected towns, not a count of unique residents.
 
 ## Trial result for experiment 1
 

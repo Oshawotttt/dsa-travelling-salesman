@@ -13,7 +13,7 @@ airdrop/             Python package
   model.py           towns, the six bases (3 rural, 3 non-rural), aircraft parameters, distances, route evaluator, per-stop route trace
   prefix.py          RouteState: prefix sums giving O(1) insertion, removal and 2-opt fuel costs
   approach_a.py      Approach A: greedy insertion, lazy max-heap or full re-scan selector
-  baseline.py        nearest neighbour with a fuel cutoff (Approach B's starting route)
+  baseline.py        nearest neighbour and population sort-then-fit baselines
   approach_b.py      Approach B: best-improvement local search (2-opt, add, swap, replace 1 with 2)
   exact_dp.py        exact backward subset DP for small instances (up to 15 towns)
   plot.py            interactive HTML map of labelled routes (folium); imported on its own, not from airdrop
@@ -35,6 +35,7 @@ pyproject.toml       pytest configuration
 Implemented: nearest neighbour, Approach A (heap and re-scan), Approach B and the exact DP.
 Also implemented: the interactive HTML route map.
 Experiments 1-4 are implemented, with their outputs committed (see Running the experiments).
+Experiment 5 checks the population-sort claim from the presentation.
 Wind, climb, descent and airspace are not modelled.
 
 ## Setup
@@ -68,9 +69,12 @@ python -m experiments.e1_heap_vs_scan.run
 python -m experiments.e2_run_time.run         # about 8.5 minutes, mostly Approach B
 python -m experiments.e3_bases.run            # about 8.5 minutes, mostly Approach B
 python -m experiments.e4_optimality_gap.run
+python -m experiments.e5_population_sort.run
 ```
 
-Each writes `runs.csv`, `routes.csv` and `plot.png` to `experiments/<folder>/out/`; these files are committed. The scripts find `data/cities_clean.csv` and `out/` from their own path, so the working directory does not matter for them. Plots use matplotlib's `Agg` backend, so they render without a display, and are drawn from `runs.csv` only. The CSV format is in [docs/CONTRACTS.md](docs/CONTRACTS.md#experiment-output); the plan and results are in [docs/EXPERIMENT.md](docs/EXPERIMENT.md). CSVs are read and written with the `csv` module; there is no pandas.
+Experiment 5 includes its cleaned input under `experiments/e5_population_sort/input/`, so it runs from a clean clone. It reuses and re-evaluates the committed Experiment 3 B routes after verifying the input against Experiment 3's A routes. Its `provenance.json` records that choice and the input checksum. Use `python -m experiments.e5_population_sort.run --fresh-b` to recompute B too; that can take substantially longer.
+
+Each writes `runs.csv`, `routes.csv` and `plot.png` to `experiments/<folder>/out/`; Experiment 5 also writes `summary.csv` and `provenance.json`. Experiments 1–4 read `data/cities_clean.csv`; Experiment 5 reads its bundled input. All find their output folder from their own path, so the working directory does not matter. Plots use matplotlib's `Agg` backend, so they render without a display, and are drawn from `runs.csv` or `summary.csv` only. The CSV format is in [docs/CONTRACTS.md](docs/CONTRACTS.md#experiment-output); the plan and results are in [docs/EXPERIMENT.md](docs/EXPERIMENT.md). CSVs are read and written with the `csv` module; there is no pandas.
 
 ## Using the solvers
 
