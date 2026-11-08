@@ -1,0 +1,9 @@
+{
+  "b_reused": true,
+  "input": "experiments/e5_population_sort/input/cities_clean.csv",
+  "input_sha256": "9a95af9c67b012dbabbc10b1b29f0f77c1614192f52019c3936f79e83fb76c30",
+  "b_source": "experiments/e3_bases/out",
+  "reference_runs_sha256": "6a3cd98237fc438bf8e482cdbe462dd2c953d6e7ff4827a99a5ceaef1f232805",
+  "reference_routes_sha256": "8a35772c9c86c2e17d05945b181da44660b4bbc5f039aa673a28ebd85bad0f07",
+  "input_check": "A routes and population match E3 at all requested bases; B routes re-evaluated"
+}

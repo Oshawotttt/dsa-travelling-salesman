@@ -10,11 +10,11 @@ from typing import Mapping, Sequence
 
 from airdrop.approach_a import SolveResult, greedy_insertion
 from airdrop.approach_b import local_search
-from airdrop.baseline import nearest_neighbour
+from airdrop.baseline import nearest_neighbour, population_sort_then_fit
 from airdrop.exact_dp import exact_dp
 from airdrop.model import Instance, Stop, trace
 
-ALGORITHMS = ("nn", "a_heap", "a_scan", "b", "b_on_a", "dp")
+ALGORITHMS = ("nn", "a_heap", "a_scan", "b", "b_on_a", "dp", "sort_then_fit")
 
 
 @dataclass(frozen=True)
@@ -44,6 +44,8 @@ def solve(inst: Instance, algorithm: str, a_route: Sequence[int] | None = None) 
     """Run one named algorithm. "b_on_a" is local search started from a_route."""
     if algorithm == "nn":
         return nearest_neighbour(inst)
+    if algorithm == "sort_then_fit":
+        return population_sort_then_fit(inst)
     if algorithm == "a_heap":
         return greedy_insertion(inst, "heap")
     if algorithm == "a_scan":
@@ -83,7 +85,7 @@ def write_outputs(out_dir: Path, runs: Sequence[Run], stops: Mapping[int, Sequen
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "runs.csv", "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(RUNS_COLUMNS)
         for r in runs:
             row = list(astuple(r))
@@ -91,7 +93,7 @@ def write_outputs(out_dir: Path, runs: Sequence[Run], stops: Mapping[int, Sequen
             row[RUNS_COLUMNS.index("stats")] = json.dumps(r.stats)
             writer.writerow(row)
     with open(out_dir / "routes.csv", "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(ROUTES_COLUMNS)
         for r in runs:
             for stop in sorted(stops[r.run_id], key=lambda s: s.step):

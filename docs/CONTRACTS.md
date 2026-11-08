@@ -111,6 +111,7 @@ def greedy_insertion(inst: Instance, selector: Literal["heap", "scan"] = "heap",
 
 # airdrop/baseline.py
 def nearest_neighbour(inst: Instance) -> SolveResult
+def population_sort_then_fit(inst: Instance) -> SolveResult
 
 # airdrop/approach_b.py
 def local_search(inst: Instance, initial: Sequence[int] | None = None,
@@ -121,6 +122,7 @@ def local_search(inst: Instance, initial: Sequence[int] | None = None,
 |---|---|
 | `greedy_insertion` | `score_evals` (candidate scorings), `insertions`. The heap adds `heap_pops` and `heap_pushes` (initial pushes included). `audit=True` adds `mismatches`: steps where the heap's pick differs from the full re-scan's; the audit's own scorings are not in `score_evals`. |
 | `nearest_neighbour` | `checks` (candidate feasibility checks), `steps` (towns added). |
+| `population_sort_then_fit` | `insertions` (towns placed), `skipped` (towns that did not fit), `two_opt` (fuel-improving reversals). |
 | `local_search` | `rounds` (moves applied), one count per move type (`two_opt`, `add`, `swap`, `replace_1_2`), `hit_max_rounds` (1 when `max_rounds` stopped the search with an improving move left). |
 
 - `greedy_insertion` raises `ValueError` for an unknown `selector`.
@@ -244,7 +246,7 @@ class RouteState:
 
 ```python
 # experiments/common.py
-ALGORITHMS = ("nn", "a_heap", "a_scan", "b", "b_on_a", "dp")
+ALGORITHMS = ("nn", "a_heap", "a_scan", "b", "b_on_a", "dp", "sort_then_fit")
 
 @dataclass(frozen=True)
 class Run:
@@ -284,6 +286,7 @@ Algorithm names:
 | `b` | `local_search(inst)` |
 | `b_on_a` | `local_search(inst, initial=a_route)` |
 | `dp` | `exact_dp(inst)` |
+| `sort_then_fit` | `population_sort_then_fit(inst)` |
 
 - `solve` raises `ValueError` for an unknown algorithm, and for `"b_on_a"` without `a_route`. `run` raises `ValueError` when `repeats < 1`.
 - `time_s` is wall-clock `time.perf_counter()` around the solver call only (not `trace`, not CSV writing). With `repeats > 1` it is the minimum, and `run` returns the last call's `SolveResult` (the solvers are deterministic). Experiments 1 and 2 use 3 repeats, the others 1.
@@ -339,6 +342,9 @@ Grid keywords and defaults (the module entry point passes only the towns and the
 | `e1_heap_vs_scan`, `e2_run_time` | `(towns, out_dir, thresholds=(100_000, 50_000, 15_000, 0), base="perak", repeats=3)` |
 | `e3_bases` | `(towns, out_dir, bases=tuple(BASES))` |
 | `e4_optimality_gap` | `(towns, out_dir, seeds=range(10), sample_size=12, base="perak", min_samples=8, share=0.8)` |
+| `e5_population_sort` | `(towns, out_dir, bases=("perak", "klia", "sarawak", "sabah", "kuching", "kota_kinabalu"), reference_dir=None, input_path=None)` |
+
+Experiment 5 also writes `summary.csv`, with one row per base and columns `base, n_towns, F, a_population, sort_population, best_b_algorithm, best_b_population, sort_gap_pct, sort_towns, sort_fuel_kg`. The gap is `100 * (best_b_population - sort_population) / best_b_population`; `best_b_algorithm` is `b` or `b_on_a`, whichever has larger population.
 
 `experiments/e4_optimality_gap/run.py` also exposes:
 

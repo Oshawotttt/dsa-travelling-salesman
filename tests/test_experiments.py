@@ -7,7 +7,7 @@ import pytest
 
 from airdrop.approach_a import greedy_insertion
 from airdrop.approach_b import local_search
-from airdrop.baseline import nearest_neighbour
+from airdrop.baseline import nearest_neighbour, population_sort_then_fit
 from airdrop.exact_dp import exact_dp
 from airdrop.model import BASES, Base, Instance, Params, Stop, Town, evaluate, trace
 from experiments.e1_heap_vs_scan import run as e1
@@ -40,6 +40,7 @@ def test_solve_dispatch():
         "b": local_search(inst),
         "b_on_a": local_search(inst, initial=a_route),
         "dp": exact_dp(inst),
+        "sort_then_fit": population_sort_then_fit(inst),
     }
     assert set(ALGORITHMS) == set(direct)
     for name in ALGORITHMS:
